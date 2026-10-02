@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "btd6-dashboard",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "btd6:dashboard"],
+      "port": 4319
+    }
+  ]
+}

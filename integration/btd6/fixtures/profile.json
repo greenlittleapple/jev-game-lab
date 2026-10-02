@@ -1,0 +1,9 @@
+{
+ "api": 1, "bridge_version": "0.3.2", "observed_at": "2026-09-29T20:00:00.0000000Z", "unlock_all": true,
+ "unlocked_towers": ["BoomerangMonkey", "DartMonkey", "TackShooter"],
+ "unlocked_heroes": ["Quincy"],
+ "acquired_upgrades": ["Long Range Darts", "Sharp Shots"],
+ "acquired_knowledge": [],
+ "knowledge_points": 0, "rank": 3, "xp": 1250, "veteran_rank": 0, "veteran_xp": 0,
+ "tower_xp": {"BoomerangMonkey": 40, "DartMonkey": 310.5}
+}

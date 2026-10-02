@@ -1,0 +1,11 @@
+{
+ "towers": [
+  {"id": "Quincy", "name": "Quincy", "cost": 585, "range": 50, "is_hero": true, "unlocked": true},
+  {"id": "DartMonkey", "name": "Dart Monkey", "cost": 215, "range": 32, "is_hero": false, "unlocked": true},
+  {"id": "BoomerangMonkey", "name": "Boomerang Monkey", "cost": 350, "range": 43, "is_hero": false, "unlocked": true},
+  {"id": "BombShooter", "name": "Bomb Shooter", "cost": 565, "range": 40, "is_hero": false, "unlocked": true},
+  {"id": "NinjaMonkey", "name": "Ninja Monkey", "cost": 540, "range": 40, "is_hero": false, "unlocked": false},
+  {"id": "Druid", "name": "Druid", "cost": 430, "range": 35, "is_hero": false, "unlocked": true, "in_inventory": false},
+  {"id": "Gwendolin", "name": "Gwendolin", "cost": 900, "range": 40, "is_hero": true, "unlocked": true}
+ ]
+}

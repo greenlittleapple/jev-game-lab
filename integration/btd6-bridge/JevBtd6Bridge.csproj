@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Jev BTD6 bridge: a BTD6 Mod Helper mod (MelonLoader 0.7, Unity IL2CPP, .NET 6 runtime) that serves
+    the match state and single-player tower commands on 127.0.0.1 (docs/ARCHITECTURE.md, "Bridge").
+
+    Build against a modded install that has been launched once (MelonLoader then generates
+    MelonLoader/Il2CppAssemblies):
+      dotnet build integration/btd6-bridge/JevBtd6Bridge.csproj -c Release -p:BTD6Dir="<BTD6 dir>"
+    or set BTD6_DIR in the environment. The build never writes into the game folder; installing the
+    DLL in <BTD6 dir>/Mods is a separate, approved step (docs/BTD6-SPIKE-PLAN.md).
+
+    The .NET 6 targeting pack comes from NuGet on the first build. Without it, pass
+    -p:DotNet6RuntimeDir="<dotnet>/shared/Microsoft.NETCore.App/6.0.x" to compile against an
+    installed .NET 6 runtime instead.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>JevBtd6Bridge</AssemblyName>
+    <RootNamespace>JevBtd6Bridge</RootNamespace>
+    <!-- Keep in step with ModHelperData.Version. -->
+    <Version>0.3.16</Version>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <BTD6Dir Condition="'$(BTD6Dir)' == ''">$(BTD6_DIR)</BTD6Dir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DotNet6RuntimeDir)' != ''">
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(DotNet6RuntimeDir)' != ''">
+    <Reference Include="$(DotNet6RuntimeDir)\System.*.dll;$(DotNet6RuntimeDir)\Microsoft.Win32.Primitives.dll;$(DotNet6RuntimeDir)\netstandard.dll;$(DotNet6RuntimeDir)\mscorlib.dll"
+               Exclude="$(DotNet6RuntimeDir)\System.IO.Compression.Native.dll" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="$(BTD6Dir)\MelonLoader\net6\MelonLoader.dll" Private="false" />
+    <Reference Include="$(BTD6Dir)\MelonLoader\net6\0Harmony.dll" Private="false" />
+    <Reference Include="$(BTD6Dir)\MelonLoader\net6\Il2CppInterop.Runtime.dll" Private="false" />
+    <Reference Include="$(BTD6Dir)\MelonLoader\net6\Il2CppInterop.Common.dll" Private="false" />
+    <Reference Include="$(BTD6Dir)\MelonLoader\Il2CppAssemblies\*.dll" Private="false" />
+    <Reference Include="$(BTD6Dir)\Mods\Btd6ModHelper.dll" Private="false" />
+  </ItemGroup>
+
+  <Target Name="CheckBTD6Dir" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(BTD6Dir)' == ''" Text="Set BTD6Dir (or the BTD6_DIR environment variable) to the BTD6 install folder." />
+    <Error Condition="!Exists('$(BTD6Dir)\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll')" Text="MelonLoader's generated assemblies are missing under BTD6Dir. Launch the modded game once so MelonLoader generates them." />
+    <Error Condition="!Exists('$(BTD6Dir)\Mods\Btd6ModHelper.dll')" Text="Btd6ModHelper.dll is missing from the game's Mods folder." />
+  </Target>
+</Project>

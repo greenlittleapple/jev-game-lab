@@ -1,0 +1,346 @@
+{
+ "source": "Hard Standard run with policy btd6-jev-v3, bridge 0.3.8, 2026-09-30: rank 18 to 26, Striker Jones unlocked (rank 21) and his splash dismissed",
+ "start": {
+  "observed_at": "2026-09-30T06:59:59.9944153Z",
+  "bridge_version": "0.3.9",
+  "unlock_all": true,
+  "rank": 18,
+  "xp": 72080,
+  "veteran_rank": 0,
+  "knowledge_points": 0,
+  "unlocked_towers": [
+   "BombShooter",
+   "BoomerangMonkey",
+   "DartMonkey",
+   "GlueGunner",
+   "IceMonkey",
+   "TackShooter"
+  ],
+  "unlocked_heroes": [
+   "Gwendolin",
+   "Quincy",
+   "Sheriff"
+  ],
+  "acquired_upgrades": [
+   "AUT0M8",
+   "Adaptive Workers",
+   "Banana Financier",
+   "Banana Intelligence Bureau",
+   "Beacon of Legends",
+   "Bewildering Storm",
+   "CMDRCh1p",
+   "Camo Bananas",
+   "Condition",
+   "CozyRadiantBath",
+   "DroneAmbusNetwork",
+   "High Impact",
+   "HighReps",
+   "Intensity",
+   "Long Range Darts",
+   "MaxOutput",
+   "Mini Stormcaller",
+   "Monkey Banker",
+   "NEUR0MAP",
+   "NoQuit",
+   "OhBoyICantWait",
+   "Piercing Wind",
+   "Quick Shots",
+   "Rapid Recharge",
+   "Regrow Bananas",
+   "RejuvenatingHotspring",
+   "ReleasetheQuacken",
+   "Resistance",
+   "Sharp Shots",
+   "SnugOozeSurprise",
+   "SoothingGeothermalSpa",
+   "TherapeuticMudBath",
+   "TriggerHappyDrones"
+  ],
+  "acquired_knowledge": [],
+  "tower_xp": {
+   "BombShooter": 5139.731796264648,
+   "BoomerangMonkey": 58.94736862182617,
+   "DartMonkey": 17770.83741378784,
+   "MonkeyAce": 9376.726577758789,
+   "MortarMonkey": 24011.412925720215,
+   "NinjaMonkey": 1465.7446174621582,
+   "SniperMonkey": 10574.413372039795,
+   "WizardMonkey": 3682.1861686706543
+  }
+ },
+ "end": {
+  "observed_at": "2026-09-30T07:15:10.0128883Z",
+  "bridge_version": "0.3.9",
+  "unlock_all": true,
+  "rank": 26,
+  "xp": 198230,
+  "veteran_rank": 0,
+  "knowledge_points": 0,
+  "unlocked_towers": [
+   "BombShooter",
+   "BoomerangMonkey",
+   "DartMonkey",
+   "GlueGunner",
+   "IceMonkey",
+   "TackShooter"
+  ],
+  "unlocked_heroes": [
+   "Gwendolin",
+   "Quincy",
+   "Sheriff",
+   "StrikerJones"
+  ],
+  "acquired_upgrades": [
+   "AUT0M8",
+   "Adaptive Workers",
+   "Banana Financier",
+   "Banana Intelligence Bureau",
+   "Beacon of Legends",
+   "Bewildering Storm",
+   "CMDRCh1p",
+   "Camo Bananas",
+   "Condition",
+   "CozyRadiantBath",
+   "DroneAmbusNetwork",
+   "High Impact",
+   "HighReps",
+   "Intensity",
+   "Long Range Darts",
+   "MaxOutput",
+   "Mini Stormcaller",
+   "Monkey Banker",
+   "NEUR0MAP",
+   "NoQuit",
+   "OhBoyICantWait",
+   "Piercing Wind",
+   "Quick Shots",
+   "Rapid Recharge",
+   "Regrow Bananas",
+   "RejuvenatingHotspring",
+   "ReleasetheQuacken",
+   "Resistance",
+   "Sharp Shots",
+   "SnugOozeSurprise",
+   "SoothingGeothermalSpa",
+   "TherapeuticMudBath",
+   "TriggerHappyDrones"
+  ],
+  "acquired_knowledge": [],
+  "tower_xp": {
+   "BombShooter": 19594.452606201172,
+   "BoomerangMonkey": 58.94736862182617,
+   "DartMonkey": 37500.03985786438,
+   "MonkeyAce": 21796.184089660645,
+   "MortarMonkey": 51178.41831970215,
+   "NinjaMonkey": 1465.7446174621582,
+   "SniperMonkey": 62954.02618789673,
+   "WizardMonkey": 3682.1861686706543
+  }
+ },
+ "events": [
+  {
+   "time": "2026-09-30T06:59:48.149Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "title_screen",
+    "button": "start",
+    "expect": {
+     "popup_class": "TitleScreen"
+    }
+   }
+  },
+  {
+   "time": "2026-09-30T06:59:54.381Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "modded_client_notice",
+    "button": "continue",
+    "expect": {
+     "popup_class": "ModdingPopup"
+    }
+   }
+  },
+  {
+   "time": "2026-09-30T06:59:56.417Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "modded_client_notice",
+    "button": "continue",
+    "expect": {
+     "popup_class": "ModdingPopup"
+    }
+   }
+  },
+  {
+   "time": "2026-09-30T07:04:41.422Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "level_up",
+    "button": "continue",
+    "popup_class": "LevelUpScreen"
+   }
+  },
+  {
+   "time": "2026-09-30T07:06:40.392Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "level_up",
+    "button": "continue",
+    "popup_class": "LevelUpScreen"
+   }
+  },
+  {
+   "time": "2026-09-30T07:06:56.309Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "tutorial_notice",
+    "button": "ok",
+    "popup_class": "Popup"
+   }
+  },
+  {
+   "time": "2026-09-30T07:08:16.314Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "level_up",
+    "button": "continue",
+    "popup_class": "LevelUpScreen"
+   }
+  },
+  {
+   "time": "2026-09-30T07:08:17.458Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "tutorial_notice",
+    "button": "ok",
+    "popup_class": "Popup"
+   }
+  },
+  {
+   "time": "2026-09-30T07:08:18.627Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "hero_unlock_notice",
+    "button": "continue",
+    "popup_class": "HeroPurchaseSplash"
+   }
+  },
+  {
+   "time": "2026-09-30T07:09:35.020Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "level_up",
+    "button": "continue",
+    "popup_class": "LevelUpScreen"
+   }
+  },
+  {
+   "time": "2026-09-30T07:10:36.366Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "level_up",
+    "button": "continue",
+    "popup_class": "LevelUpScreen"
+   }
+  },
+  {
+   "time": "2026-09-30T07:11:51.720Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "level_up",
+    "button": "continue",
+    "popup_class": "LevelUpScreen"
+   }
+  },
+  {
+   "time": "2026-09-30T07:13:06.467Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "level_up",
+    "button": "continue",
+    "popup_class": "LevelUpScreen"
+   }
+  },
+  {
+   "time": "2026-09-30T07:13:07.637Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "xp_notice",
+    "button": "continue",
+    "popup_class": "LevelUpMonkeyMoneyScreen"
+   }
+  },
+  {
+   "time": "2026-09-30T07:13:28.905Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "tutorial_notice",
+    "button": "ok",
+    "popup_class": "Popup"
+   }
+  },
+  {
+   "time": "2026-09-30T07:14:21.165Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "level_up",
+    "button": "continue",
+    "popup_class": "LevelUpScreen"
+   }
+  },
+  {
+   "time": "2026-09-30T07:14:48.465Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "tutorial_notice",
+    "button": "ok",
+    "popup_class": "Popup"
+   }
+  },
+  {
+   "time": "2026-09-30T07:15:10.310Z",
+   "kind": "dispatch",
+   "outcome": "pending",
+   "command": {
+    "action": "dismiss_popup",
+    "popup": "victory",
+    "button": "home",
+    "popup_class": "VictoryScreen"
+   }
+  }
+ ]
+}

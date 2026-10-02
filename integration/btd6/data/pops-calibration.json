@@ -1,0 +1,17 @@
+{
+ "version": 1,
+ "default": {
+  "factor": 1,
+  "from_round": 1,
+  "basis_kind": "none",
+  "basis": "No evidence for this setup: the estimate is used as it is."
+ },
+ "setups": {
+  "Tutorial/Hard/Standard": {
+   "factor": 1.08,
+   "from_round": 60,
+   "basis_kind": "outcome_bounds",
+   "basis": "Outcome lower bounds (pops-calibration.mjs outcomeBounds) from the Monkey Meadow Hard Standard run logs up to 2026-09-30T09:30Z, recomputed with the current estimate and the fixture track. 22 cleared rounds, all from round 60 on, had the estimate below the RBE: rbe / can_pop from 1.01 to 4.5, 25th percentile 1.08, median 1.29 (the highest in rounds 75, 76, 79 and 80). One round from 60 on lost lives with camo, lead and reach covered (round 75, upper bound 2.36). Before round 60 the estimate was above the RBE in every cleared round (bound at most 0.87) and in every round that lost lives (at most 0.7), so the factor starts at 60. Rounds with a Skywarden (not in towers.json) are left out. Replaced by pops_round measurements (bridge 0.3.13)."
+  }
+ }
+}

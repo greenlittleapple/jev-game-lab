@@ -1,0 +1,54 @@
+{
+ "generated_by": "integration/btd6/early-ratios.mjs",
+ "source_commit": "ac7ec89",
+ "logs": {
+  "setup": "Hard Standard",
+  "only": "current era (hard-rounds.mjs currentEra)",
+  "rounds": [
+   3,
+   10
+  ],
+  "runs": 50,
+  "runs_with_towers": 50,
+  "from": "2026-09-30T10:00:33.261Z",
+  "to": "2026-10-01T10:59:05.279Z"
+ },
+ "min_tower_rounds": 30,
+ "all": {
+  "ratio": 0.374,
+  "tower_rounds": 905,
+  "pops": 34137,
+  "est_reach": 91388
+ },
+ "types": {
+  "BombShooter": {
+   "ratio": 0.218,
+   "measured": 0.218,
+   "tower_rounds": 214,
+   "pops": 8415,
+   "est_reach": 38680
+  },
+  "DartMonkey": {
+   "ratio": 0.476,
+   "measured": 0.476,
+   "tower_rounds": 603,
+   "pops": 22786,
+   "est_reach": 47919
+  },
+  "MonkeyAce": {
+   "ratio": 0.374,
+   "measured": 0.413,
+   "tower_rounds": 20,
+   "pops": 816,
+   "est_reach": 1977,
+   "uses": "*"
+  },
+  "SniperMonkey": {
+   "ratio": 0.754,
+   "measured": 0.754,
+   "tower_rounds": 68,
+   "pops": 2120,
+   "est_reach": 2812
+  }
+ }
+}

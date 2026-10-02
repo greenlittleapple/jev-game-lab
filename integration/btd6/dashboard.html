@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jev BTD6 dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap');
+:root{color-scheme:dark;--bg:#101413;--panel:#191f1b;--panel2:#1f271f;--line:#303a31;--ink:#edece1;--muted:#98a498;--accent:#c4ed82;--accent-ink:#172110;--gold:#f0c776;--bad:#f0907a;--good:#a8e070;--violet:#c9b5ff;--glow:0 0 18px #bdeb8540;--bar:#354133}
+:root[data-theme="light"]{color-scheme:light;--bg:#f4f5ef;--panel:#ffffff;--panel2:#f1f4ea;--line:#d9ded2;--ink:#1c231d;--muted:#5f6b60;--accent:#4d7a1e;--accent-ink:#ffffff;--gold:#9a6b12;--bad:#b3412b;--good:#3f7a1a;--violet:#5f48b0;--glow:none;--bar:#e3e8dc}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){color-scheme:light;--bg:#f4f5ef;--panel:#ffffff;--panel2:#f1f4ea;--line:#d9ded2;--ink:#1c231d;--muted:#5f6b60;--accent:#4d7a1e;--accent-ink:#ffffff;--gold:#9a6b12;--bad:#b3412b;--good:#3f7a1a;--violet:#5f48b0;--glow:none;--bar:#e3e8dc}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 'DM Sans',system-ui,sans-serif}
+main{max-width:1320px;margin:0 auto;padding:28px 24px 48px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 16px;margin-bottom:18px}
+.brand{font:600 17px 'Space Grotesk',system-ui,sans-serif;letter-spacing:-.4px;white-space:nowrap}
+.brand b{background:var(--accent);color:var(--accent-ink);padding:6px 9px;margin-right:10px;border-radius:8px;box-shadow:var(--glow)}
+.head-right{display:flex;gap:8px;align-items:center}
+.badge{font-size:11px;border:1px solid var(--line);padding:6px 11px;border-radius:30px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:inline-flex;gap:7px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}.dot.live{background:var(--accent);box-shadow:var(--glow)}.dot.off{background:var(--bad)}
+button{border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);padding:6px 11px;cursor:pointer;font:600 12px 'DM Sans',sans-serif}
+button:hover{border-color:var(--accent)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:12px;margin-bottom:16px}
+.meta b{color:var(--ink);font-weight:600}
+.warn{color:var(--gold)}.bad{color:var(--bad)}.good{color:var(--good)}.muted{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat{border:1px solid var(--line);padding:14px 16px;border-radius:10px;background:var(--panel)}
+.stat label{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1.4px}
+.stat strong{display:block;font:500 28px/1.2 'Space Grotesk',sans-serif;margin-top:6px}
+.stat small{color:var(--muted);font-size:12px}
+.layout{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;align-items:start}
+.col{display:grid;gap:18px;min-width:0}
+.panel{border:1px solid var(--line);border-radius:12px;background:var(--panel);min-width:0;overflow:hidden}
+.panel-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line);font-weight:600}
+.panel-title small{font-weight:400;color:var(--muted);font-size:12px}
+.src{display:inline-block;font-size:10px;letter-spacing:.8px;text-transform:uppercase;padding:1px 7px;border-radius:10px;border:1px solid var(--line);color:var(--muted);font-weight:500;margin-left:6px;vertical-align:1px}
+.src.calc{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+.src.log{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)}
+.src.bridge{color:var(--violet);border-color:color-mix(in srgb,var(--violet) 45%,transparent)}
+.body{padding:14px 18px}
+.empty{color:var(--muted);padding:6px 0}
+h3{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;font-weight:600}
+h3:first-child{margin-top:0}
+dl.kv{display:grid;grid-template-columns:max-content 1fr;gap:3px 14px;margin:0}dl.kv dt{color:var(--muted)}dl.kv dd{margin:0;overflow-wrap:anywhere}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.4px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;border:1px solid var(--line);border-radius:14px;padding:2px 9px;background:var(--panel2)}
+.chip.on{border-color:var(--bad);color:var(--bad)}.chip.cap{border-color:var(--gold);color:var(--gold)}.chip.ok{color:var(--good)}
+.meter{height:4px;background:var(--bar);border-radius:3px;overflow:hidden;margin-top:4px}.meter div{height:100%;background:var(--accent)}
+.feed{max-height:760px;overflow:auto}
+.dec{padding:11px 18px;border-bottom:1px solid var(--line)}
+.dec:first-child{background:var(--panel2)}
+.dec .top{display:flex;justify-content:space-between;gap:10px}
+.dec .top span{font-weight:500}.dec .top small{color:var(--muted);font-size:11px;white-space:nowrap}
+.dec .line{font-size:12px;color:var(--muted);margin-top:3px}
+.tag{display:inline-block;font-size:10.5px;padding:0 7px;border-radius:9px;border:1px solid var(--line);margin:2px 4px 0 0;color:var(--muted)}
+.tag.rule{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)}
+.tag.ovr{color:var(--violet);border-color:color-mix(in srgb,var(--violet) 45%,transparent)}
+.dec details{margin-top:6px;font-size:12px}.dec summary{cursor:pointer;color:var(--muted)}
+.probs{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:1px 8px;margin:4px 0 8px}
+.probs .pbar{grid-column:1/-1;height:3px;background:var(--bar);border-radius:2px}.probs .pbar div{height:100%;background:var(--accent)}
+.probs .pick{color:var(--accent);font-weight:600}
+pre{white-space:pre-wrap;word-break:break-word;font:11.5px/1.45 ui-monospace,Consolas,monospace;background:var(--panel2);padding:8px;border-radius:6px;margin:4px 0;color:var(--ink)}
+.toolbar{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted)}
+.toolbar label{display:flex;gap:5px;align-items:center;cursor:pointer}
+footer{margin-top:22px;color:var(--muted);font-size:12px;line-height:1.7}
+footer b{color:var(--ink);font-weight:600}
+@media (max-width:980px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}main{padding:18px 16px 40px}}
+</style></head><body><main>
+<header><div class="brand"><b>J</b>Jev / BTD6</div><div class="head-right"><span class="badge"><span class="dot" id="dot"></span><span id="conn">Connecting</span></span><button id="theme" type="button">Theme</button></div></header>
+<div class="meta" id="meta"></div>
+<div class="stats">
+ <div class="stat"><label>Round</label><strong id="s-round">-</strong><small id="s-round2">No match</small></div>
+ <div class="stat"><label>Lives</label><strong id="s-lives">-</strong><small id="s-lives2"></small></div>
+ <div class="stat"><label>Cash</label><strong id="s-cash">-</strong><small id="s-cash2"></small></div>
+ <div class="stat"><label>Speed</label><strong id="s-speed">-</strong><small id="s-speed2"></small></div>
+</div>
+<div class="layout">
+ <div class="col">
+  <section class="panel"><div class="panel-title"><span>Plan <span class="src log">log</span></span><small id="plan-sub"></small></div><div class="body" id="plan"></div></section>
+  <section class="panel"><div class="panel-title"><span>Upcoming rounds <span class="src calc">recomputed</span></span><small id="rounds-sub"></small></div><div class="scroll" id="rounds"></div></section>
+  <section class="panel"><div class="panel-title"><span>Towers <span class="src bridge" id="towers-src">state</span> <span class="src calc">estimates</span></span><small id="towers-sub"></small></div><div class="scroll" id="towers"></div></section>
+  <section class="panel"><div class="panel-title"><span>Speed changes <span class="src log">log</span></span><small id="sets-sub"></small></div><div class="body" id="sets"></div></section>
+ </div>
+ <div class="col">
+  <section class="panel"><div class="panel-title"><span>Jev decisions <span class="src log">log</span></span><small id="dec-sub"></small></div>
+   <div class="body toolbar" style="border-bottom:1px solid var(--line)"><label><input type="checkbox" id="hide-waits"> Hide waits</label><span id="dec-counts"></span></div>
+   <div class="feed" id="decisions"></div></section>
+  <section class="panel"><div class="panel-title"><span>Speed <span class="src calc">recomputed</span></span><small id="speed-sub"></small></div><div class="body" id="speed"></div></section>
+  <section class="panel"><div class="panel-title"><span>Measurements <span class="src log">log</span></span><small id="meas-sub"></small></div><div class="body" id="meas"></div></section>
+  <section class="panel"><div class="panel-title"><span>Run history <span class="src log">log + series.jsonl</span></span><small id="hist-sub"></small></div><div class="scroll" id="history"></div></section>
+ </div>
+</div>
+<footer id="foot"></footer>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const time = t => t ? new Date(t).toLocaleTimeString() : '-';
+const num = (v, d = 2) => v == null ? '-' : v === Infinity || v === 'Infinity' ? 'inf' : typeof v === 'number' ? (Number.isInteger(v) ? String(v) : v.toFixed(d)) : esc(v);
+const yes = v => v === true ? '<span class="good">yes</span>' : v === false ? '<span class="bad">no</span>' : '<span class="muted">-</span>';
+const pct = p => Math.round((p ?? 0) * 100) + '%';
+const kv = rows => '<dl class="kv">' + rows.filter(Boolean).map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + v + '</dd>').join('') + '</dl>';
+const table = (cols, rows, empty = 'None yet.') => rows.length ? '<table><tr>' + cols.map(c => '<th' + (c[2] ? ' class="num"' : '') + '>' + esc(c[0]) + '</th>').join('') + '</tr>'
+ + rows.map(r => '<tr>' + cols.map(c => '<td' + (c[2] ? ' class="num"' : '') + '>' + c[1](r) + '</td>').join('') + '</tr>').join('') + '</table>' : '<div class="body empty">' + empty + '</div>';
+// Sets innerHTML only when it changed, keeping open <details> (by data-k) and scroll positions.
+function put(id, html) {
+ const el = $(id);
+ if (el.dataset.html === html) return;
+ const open = new Set([...el.querySelectorAll('details[open]')].map(d => d.dataset.k));
+ el.innerHTML = html; el.dataset.html = html;
+ el.querySelectorAll('details[data-k]').forEach(d => { if (open.has(d.dataset.k)) d.open = true; });
+}
+const text = (id, v) => { if ($(id).textContent !== String(v ?? '')) $(id).textContent = v ?? ''; };
+
+// Theme: follows the system until chosen; the choice is kept in this browser only.
+const THEMES = ['system', 'dark', 'light'];
+let theme = 'system';
+try { theme = localStorage.getItem('btd6-dashboard-theme') || 'system'; } catch {}
+const applyTheme = () => { if (theme === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = theme; $('theme').textContent = 'Theme: ' + theme; };
+$('theme').addEventListener('click', () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length]; try { localStorage.setItem('btd6-dashboard-theme', theme); } catch {} applyTheme(); });
+applyTheme();
+let hideWaits = false;
+try { hideWaits = localStorage.getItem('btd6-dashboard-hide-waits') === '1'; } catch {}
+$('hide-waits').checked = hideWaits;
+$('hide-waits').addEventListener('change', e => { hideWaits = e.target.checked; try { localStorage.setItem('btd6-dashboard-hide-waits', hideWaits ? '1' : '0'); } catch {} if (last) render(last); });
+
+const tiers = t => (t ?? []).join('-');
+const bloonList = b => Object.entries(b ?? {}).map(([k, n]) => n + ' ' + k).join(', ');
+const ruleText = r => {
+ const x = {...r}; delete x.kind; delete x.ids;
+ const bits = Object.entries(x).filter(([, v]) => v != null && !(Array.isArray(v) && !v.length)).map(([k, v]) => k + ' ' + (typeof v === 'object' ? JSON.stringify(v) : v));
+ return bits.join(', ');
+};
+
+function renderHeader(v) {
+ const h = v.header, b = v.bridge;
+ const conn = !b ? 'no bridge' : !b.enabled ? 'bridge reads off' : b.up ? 'bridge up' + (b.version ? ' ' + b.version : '') : 'bridge down';
+ text('conn', conn);
+ $('dot').className = 'dot' + (b?.up ? ' live' : b?.enabled ? ' off' : '');
+ const cal = h.calibration;
+ const s = h.series;
+ const items = [
+  ['Policy', h.policy ? h.policy + (h.revision != null ? ' rev ' + h.revision : '') : null],
+  ['Ruleset', h.ruleset], ['Speed', h.speed],
+  ['Calibration', h.policy ? 'MOAB x' + num(cal.moab) + ' (' + (cal.moab_source ?? '-') + '), pops x' + num(cal.pops) + ' from round ' + cal.pops_from + ' (' + (cal.pops_source ?? '-') + ')' : null],
+  ['Match', h.match_id], ['Setup', h.setup],
+  ['Series', s ? 'run ' + (s.this_run ?? s.position) + ' of ' + s.position + ' so far, since ' + time(s.since) + ' (' + Object.entries(s.by_policy).map(([p, n]) => p.replace('btd6-', '') + ' ' + n).join(', ') + ')' : null],
+  ['Bridge', h.bridge_version != null || h.bridge_port != null ? (h.bridge_version ?? '-') + (h.bridge_port != null ? ', port ' + h.bridge_port : '') : null], ['Game', h.game_version],
+  ['Playbook', h.playbook ? h.playbook.id + ' ' + h.playbook.version : null],
+  ['Log', h.log ? h.runs_dir + '/' + h.log : 'no run log in ' + (h.runs_dir ?? 'the runs directory')],
+ ].filter(([, x]) => x != null);
+ let html = items.map(([k, x]) => '<span>' + esc(k) + ' <b>' + esc(x) + '</b></span>').join('');
+ if (h.dry_run) html += '<span class="warn">dry run</span>';
+ if (h.tower_data.same === false) html += '<span class="warn">tower data differs from the run (' + esc(h.tower_data.run) + ' vs ' + esc(h.tower_data.here) + '): estimates may not match the runner</span>';
+ if (v.state_mismatch) html += '<span class="warn">the bridge shows match ' + esc(v.state_mismatch.bridge) + ', the log ' + esc(v.state_mismatch.log) + '</span>';
+ put('meta', html);
+}
+
+function renderStats(v) {
+ const m = v.match, sp = v.speed;
+ if (!m) { ['s-round', 's-lives', 's-cash', 's-speed'].forEach(id => text(id, '-')); text('s-round2', v.bridge?.screen ? 'Bridge: ' + v.bridge.screen : 'No match state yet'); text('s-lives2', ''); text('s-cash2', ''); text('s-speed2', ''); return; }
+ text('s-round', m.round + (m.final_round ? ' / ' + m.final_round : ''));
+ text('s-round2', (m.result ? 'Result: ' + m.result : m.round_active ? 'Round running' : 'Between rounds') + ' - state from ' + (m.source === 'bridge' ? 'the bridge' : 'the log, ' + time(m.at)));
+ text('s-lives', m.lives); text('s-lives2', m.starting_lives ? 'of ' + m.starting_lives + ' at the start' : '');
+ text('s-cash', '$' + m.cash.toLocaleString()); text('s-cash2', m.towers.length + ' towers, MOAB damage ' + num(m.moab_dps, 1) + '/s');
+ text('s-speed', m.speed + 'x');
+ text('s-speed2', m.result ? 'match over' : sp ? (sp.expected != null ? 'rules give ' + sp.expected + 'x' : '') + (sp.danger.length ? ', danger: ' + sp.danger.join(', ') : sp.caps.some(c => c.lowers) ? ', capped: ' + sp.caps.filter(c => c.lowers).map(c => c.reason).join(', ') : sp.limit != null ? ', by margin' : '') : '');
+}
+
+function renderSpeed(v) {
+ const sp = v.speed;
+ if (!sp) { put('speed', '<div class="empty">No active match.</div>'); text('speed-sub', ''); return; }
+ text('speed-sub', (sp.mode ?? 'no speed mode') + (v.paths.count ? '' : ' - no track paths, reach not applied'));
+ const mg = sp.margins, sig = sp.signals;
+ const bar = x => x == null ? '' : '<div class="meter"><div style="width:' + Math.min(100, Math.max(0, x / 2 * 100)) + '%"></div></div>';
+ let html = (v.match?.result ? '<div class="warn" style="margin-bottom:8px">Match over (' + esc(v.match.result) + '). The figures are for its last recorded state.</div>' : '')
+  + '<h3>Defence margin, round ' + mg.round + '</h3>' + kv([
+  ['Pops', num(mg.pops) + bar(mg.pops)], ['MOAB', mg.moab == null ? '<span class="muted">no MOAB-class bloons</span>' : num(mg.moab) + bar(mg.moab)],
+  ['Margin', '<b>' + num(mg.margin) + '</b>' + (mg.grade != null ? ' - gradeFor gives <b>' + mg.grade + 'x</b> (2.0: max, 1.3: 5, 1.0: 3, below: 1)' : '')]]);
+ html += '<h3>Caps in force</h3>' + (sp.caps.length ? '<div class="chips">' + sp.caps.map(c => '<span class="chip' + (c.lowers ? ' cap' : '') + '">' + esc(c.reason) + ' ' + c.speed + 'x</span>').join('') + '</div>' : '<div class="empty">None.</div>');
+ if (sp.limit != null) html += '<div class="line muted" style="margin-top:6px">Limit ' + sp.limit + 'x; with danger signals, the rules give ' + sp.expected + 'x. Speed-ups go one level at a time, at most every 4 s.</div>';
+ const b = sig.bloons;
+ html += '<h3>Danger signals</h3><div class="chips">' + [
+  ['lives_lost', sig.lives_lost > 0, 'lives lost ' + sig.lives_lost],
+  ['bloons_past', b && b.count > 0 && b.furthest > b.threshold, b ? 'furthest ' + num(b.furthest) + ' vs ' + b.threshold + ' (' + b.count + ' bloons)' : 'no bloon summary'],
+  ['moab_outrun', Boolean(sig.moab_outrun), sig.moab_outrun ? sig.moab_outrun.type + ' exit ' + sig.moab_outrun.exit_s + ' s, kill ' + (sig.moab_outrun.kill_s ?? 'never') + ' s' : 'none'],
+  ['leak_pressure', Boolean(sig.leak_pressure?.active), sig.leak_pressure?.active ? sig.leak_pressure.reason + ' since ' + sig.leak_pressure.since_round : 'off'],
+  ['moab_short', Boolean(sig.moab_short), sig.moab_short ? 'round ' + sig.moab_short.round + ': ' + sig.moab_short.dps + ' of ' + sig.moab_short.needs_dps + '/s' : 'none'],
+  ['consult', Boolean(sig.consult), sig.consult ?? 'none'],
+ ].map(([k, on, d]) => '<span class="chip' + (on ? ' on' : '') + '"><b>' + k + '</b> ' + esc(d) + '</span>').join('') + '</div>';
+ html += '<div class="line muted" style="margin-top:6px">Lives and leak pressure are tracked from the dashboard\'s own reads. Bloon positions need the bridge.' + (sp.danger_round != null ? ' Last danger in round ' + sp.danger_round + '.' : '') + '</div>';
+ put('speed', html);
+}
+
+function renderRounds(v) {
+ const r = v.rounds;
+ if (!r) { put('rounds', '<div class="body empty">No active match.</div>'); text('rounds-sub', ''); return; }
+ text('rounds-sub', 'hard-round list: ' + (v.hard_source ?? 'not graded speed'));
+ const need = c => c ? [c.ratio < 1 ? 'pops' : '', c.lead === false ? 'Lead' : '', c.camo === false ? 'camo' : '', c.camo_lead === false ? 'camo Lead' : '', c.burst === false ? 'burst' : '', c.early === false ? 'early track' : ''].filter(Boolean) : [];
+ let html = table([
+  ['Round', x => '<b>' + x.round + '</b>'],
+  ['Bloons', x => x.known ? esc(bloonList(x.bloons)) + (x.first.length ? '<br><span class="muted">first ' + esc(x.first.join(', ')) + '</span>' : '') : '<span class="muted">no round data</span>'],
+  ['RBE', x => num(x.rbe), true], ['Peak', x => num(x.peak), true],
+  ['Camo', x => x.known ? (x.camo || '-') + (x.camo_lead ? ' / ' + x.camo_lead + ' Lead' : '') : '', true],
+  ['Hard', x => x.hard ? '<span class="warn">' + esc(x.hard.join(', ')) + '</span>' : x.composition ? '<span class="warn">' + esc(x.composition) + '</span>' : '-'],
+  ['Pops', x => x.check ? '<span class="' + (x.check.ratio >= 1 ? 'good' : 'bad') + '">' + num(x.check.ratio) + '</span>' : '-', true],
+  ['Burst', x => x.check?.burst_ratio != null ? '<span class="' + (x.check.burst ? 'good' : 'bad') + '">' + num(x.check.burst_ratio) + '</span>' : '-', true],
+  ['MOAB', x => x.moab ? '<span class="' + (x.moab.enough ? 'good' : 'bad') + '">' + num(x.moab.ratio) + '</span>' : '-', true],
+  ['Missing', x => need(x.check).length ? '<span class="bad">' + need(x.check).join(', ') + '</span>' : x.check ? '<span class="good">none</span>' : '-'],
+ ], r.rounds);
+ const t = r.threat_short;
+ html += '<div class="body" style="padding-top:8px"><span class="muted">threat_short check (Lead, camo, camo Lead, burst; this round and the next 3):</span> ' + (t ? '<span class="bad">' + esc(t.missing.map(k => k + ' by round ' + t.rounds[k]).join(', ')) + '</span>' : '<span class="good">nothing missing</span>') + '</div>';
+ put('rounds', html);
+}
+
+function renderTowers(v) {
+ const m = v.match;
+ text('towers-src', m ? m.source : 'state');
+ if (!m) { put('towers', '<div class="body empty">No towers.</div>'); text('towers-sub', ''); return; }
+ text('towers-sub', 'pops/s with reach; MOAB damage/s x' + num(v.header.calibration.moab));
+ put('towers', table([
+  ['#', t => t.id], ['Tower', t => esc(t.base_id)], ['Tiers', t => tiers(t.tiers)],
+  ['Targeting', t => esc(t.targeting ?? '-') + (t.target_point ? '<br><span class="muted">point ' + num(t.target_point.x, 0) + ', ' + num(t.target_point.y, 0) + '</span>' : '') + (t.aim === 'unaimed' ? '<br><span class="bad">unaimed</span>' : '')],
+  ['Pops', t => num(t.pops), true], ['Pops/s', t => num(t.pps, 1), true], ['MOAB/s', t => num(t.moab_dps, 1), true],
+  ['Camo', t => yes(t.camo)], ['Lead', t => yes(t.lead)],
+ ], m.towers, 'No towers placed.'));
+}
+
+function renderSets(v) {
+ const s = v.speed_log;
+ if (!s) { put('sets', '<div class="empty">No run log.</div>'); return; }
+ text('sets-sub', s.count + ' changes');
+ const secs = s.time?.seconds ?? {}, total = Object.values(secs).reduce((a, b) => a + b, 0);
+ let html = '<h3>Time at each speed' + (s.time?.from ? ' (finished rounds)' : '') + '</h3>' + (total ? '<div class="chips">' + Object.entries(secs).sort((a, b) => a[0] - b[0]).map(([k, x]) => '<span class="chip">' + k + 'x ' + Math.round(x) + ' s (' + Math.round(x / total * 100) + '%)</span>').join('') + '</div>' : '<div class="empty">No finished round yet.</div>');
+ html += '<h3>Latest changes</h3>' + (s.sets.length ? '<table><tr><th>Time</th><th>Round</th><th class="num">Speed</th><th>Reason</th></tr>' + s.sets.map(x => '<tr><td>' + time(x.time) + '</td><td>' + x.round + '</td><td class="num">' + x.speed + 'x</td><td>' + esc(x.reason) + (x.status !== 'executed' ? ' <span class="bad">' + esc(x.status) + (x.refused ? ': ' + esc(x.refused) : '') + '</span>' : '') + '</td></tr>').join('') + '</table>' : '<div class="empty">None yet.</div>');
+ put('sets', html);
+}
+
+function probs(list, pick) {
+ if (!list?.length) return '<div class="muted">No probabilities.</div>';
+ return '<div class="probs">' + list.slice(0, 12).map(p => '<span class="' + (p.id === pick ? 'pick' : '') + '">' + esc(p.id) + '</span><span class="num">' + pct(p.p) + '</span><span class="pbar"><div style="width:' + pct(p.p) + '"></div></span>').join('') + '</div>' + (list.length > 12 ? '<div class="muted">' + (list.length - 12) + ' more</div>' : '');
+}
+
+function renderDecisions(v) {
+ const d = v.decisions;
+ if (!d) { put('decisions', '<div class="body empty">No run log yet.</div>'); text('dec-sub', ''); text('dec-counts', ''); return; }
+ text('dec-sub', d.counts.decisions + ' decisions, ' + d.tokens.input.toLocaleString() + ' input tokens');
+ text('dec-counts', 'queued ' + d.counts.queued + ', executed ' + d.counts.executed + ', held ' + d.counts.held + (d.counts.rejected ? ', rejected ' + d.counts.rejected : '')
+  + (Object.keys(d.rules).length ? ' - rules: ' + Object.entries(d.rules).map(([k, n]) => k + ' ' + n).join(', ') : '')
+  + (Object.keys(d.overrides).length ? ' - overrides: ' + Object.entries(d.overrides).map(([k, n]) => k + ' ' + n).join(', ') : ''));
+ const items = d.items.filter(x => !hideWaits || x.chosen?.id !== 'wait');
+ put('decisions', items.length ? items.map(x => {
+  const rules = x.constraint?.rules ?? [];
+  const pickGroup = x.group?.length ? x.group.find(g => x.chosen?.id === g.id || x.chosen?.id?.startsWith(g.id + '@') || x.chosen?.id?.startsWith(g.id + ':'))?.id : null;
+  const res = x.result?.reason ? ' (' + esc(x.result.reason) + ')' : '';
+  return '<div class="dec"><div class="top"><span>' + esc(x.chosen?.label ?? x.chosen?.id ?? '-') + '</span><small>round ' + (x.round ?? '-') + ' - ' + time(x.time) + '</small></div>'
+   + '<div class="line">' + esc(x.source) + (x.confidence != null ? ' ' + pct(x.confidence) : '') + ' - ' + esc(x.outcome) + res + ' - ' + (x.options ?? '-') + ' options - $' + (x.cash ?? '-') + ', ' + (x.lives ?? '-') + ' lives'
+   + (x.usage?.input_tokens ? ' - ' + x.usage.input_tokens + ' tokens' : '') + '</div>'
+   + (rules.length || x.overrides.length ? '<div>' + rules.map(r => '<span class="tag rule" title="' + esc(ruleText(r)) + '">' + esc(r.kind) + (r.removed ? ' -' + r.removed : '') + '</span>').join('') + x.overrides.map(o => '<span class="tag ovr">' + esc(o.kind ?? 'tie_break') + (o.switched === false ? ' kept' : '') + '</span>').join('') + '</div>' : '')
+   + '<details data-k="' + esc(x.time + x.n) + '"><summary>Detail</summary>'
+   + (x.group ? '<h3>Group stage' + (x.narrowed ? ' (' + x.narrowed.groups + ' groups)' : '') + '</h3>' + probs(x.group, pickGroup) : '')
+   + '<h3>' + (x.group ? 'Move stage' : 'Options') + '</h3>' + probs(x.move, x.chosen?.id)
+   + (rules.length ? '<h3>Rules (' + esc(x.constraint.kind) + ', removed ' + (x.constraint.removed ?? 0) + ')</h3>' + rules.map(r => '<div><b>' + esc(r.kind) + '</b> ' + esc(ruleText(r)) + '</div>').join('') : '')
+   + (x.overrides.length ? '<h3>Overrides</h3><pre>' + esc(x.overrides.map(o => JSON.stringify(o)).join('\n')) + '</pre>' : '')
+   + (x.plan ? '<h3>Plan</h3><pre>' + esc(JSON.stringify(x.plan)) + '</pre>' : '')
+   + '<h3>Outcome</h3><div>' + esc(x.outcome) + (x.result ? ': ' + esc([x.result.status, x.result.reason, x.result.detail].filter(Boolean).join(', ')) : '') + '</div>'
+   + '<h3>Offered</h3><div class="muted">' + esc(x.option_ids.join(', ')) + '</div>'
+   + (x.usage ? '<h3>Tokens</h3><div>' + (x.usage.input_tokens ?? 0) + ' in, ' + (x.usage.output_tokens ?? 0) + ' out (' + esc(x.model) + ')</div>' : '')
+   + '</details></div>';
+ }).join('') : '<div class="body empty">No decisions yet.</div>');
+}
+
+const buildRows = b => (b ?? []).map(x => esc(x.id) + ': ' + esc(x.tower) + ' ' + esc(x.tiers) + (x.count > 1 ? ' x' + x.count : '') + ' (rounds ' + x.round_from + ' to ' + x.round_by + ')').join('<br>');
+const threatRows = t => (t ?? []).map(x => esc(x.threat) + ' by ' + x.by_round + ': ' + esc(x.answer)).join(', ');
+const holdRows = h => (h ?? []).map(x => '$' + x.amount + ' rounds ' + x.from_round + ' to ' + x.to_round + ' for ' + esc((x.for ?? []).join(', '))).join('<br>');
+const targetRows = t => t.length ? table([['Target', x => esc(x.id)], ['Tower', x => esc(x.tower) + ' ' + esc(x.tiers)], ['By', x => x.round_by, true], ['Met', x => x.met + ' of ' + x.count, true], ['Done', x => yes(x.done)]], t) : '<div class="empty">No target passed its round yet.</div>';
+
+function renderPlan(v) {
+ const p = v.plan;
+ if (!p) { put('plan', '<div class="empty">No run log.</div>'); text('plan-sub', ''); return; }
+ if (p.kind === 'none') { put('plan', '<div class="empty">' + esc(p.policy || 'This policy') + ' plays without a plan.</div>'); text('plan-sub', ''); return; }
+ let html = '';
+ if (p.kind === 'strategist') {
+  text('plan-sub', p.requests.length + ' requests' + (p.latency ? ', adoption median ' + Math.round(p.latency.median_ms / 1000) + ' s, max ' + Math.round(p.latency.max_ms / 1000) + ' s' : ''));
+  const q = p.plan;
+  html += q ? kv([['Summary', esc(q.summary)], ['From', esc(q.reason ?? '-') + ', round ' + (q.round_at ?? '-') + ', adopted ' + time(q.adopted_at)], ['Hero', q.hero ? esc(q.hero.tower) + ' from round ' + q.hero.round_from : '-'],
+   ['Build', buildRows(q.build) || '-'], ['Holds', holdRows(q.cash_hold) || 'none'], ['Threats', threatRows(q.threats) || '-'], ['Review', q.review_round ?? '-'], q.note ? ['Note', esc(q.note)] : null]) : '<div class="empty">No plan adopted yet.</div>';
+  if (p.open) html += '<div class="warn" style="margin-top:6px">Open request: ' + esc(p.open.reason) + ' since ' + time(p.open.time) + (p.open.blocking ? ' (the runner waits)' : '') + '</div>';
+  html += '<h3>Requests</h3>' + (p.requests.length ? '<table><tr><th>Time</th><th>Reason</th><th>Result</th></tr>' + p.requests.map(r => '<tr><td>' + time(r.time) + '</td><td>' + esc(r.reason) + '</td><td>' + (r.adopted ? 'adopted after ' + ((r.adopted.latency_ms ?? 0) / 1000).toFixed(1) + ' s' + (r.adopted.late ? ' (late)' : '') : r.timeout ? '<span class="bad">timed out</span>' : '<span class="warn">open</span>') + '</td></tr>').join('') + '</table>' : '<div class="empty">None yet.</div>');
+ } else {
+  text('plan-sub', p.playbook ? p.playbook.id + ' ' + p.playbook.version + ', revision ' + p.playbook.revision : '');
+  const ph = p.phase_plan;
+  html += kv([['Phase', esc(p.phase ?? '-') + (ph ? ' (rounds ' + ph.from_round + ' to ' + ph.to_round + ')' : '')], ph ? ['Summary', esc(ph.summary)] : null,
+   ['Due', esc((p.due ?? []).join(', ') || 'none')], ['Hold', p.hold ? esc(JSON.stringify(p.hold)) : 'none'],
+   ['Branches', p.branches.length ? p.branch_notes.map(b => '<b>' + esc(b.id) + '</b> ' + esc(b.note ?? '')).join('<br>') || esc(p.branches.join(', ')) : 'none'],
+   ph ? ['Build', buildRows(ph.build) || '-'] : null, ph ? ['Holds', holdRows(ph.cash_hold) || 'none'] : null, ph ? ['Threats', threatRows(ph.threats) || '-'] : null]);
+ }
+ html += '<h3>Targets past their round</h3>' + targetRows(p.targets);
+ put('plan', html);
+}
+
+function renderMeasurements(v) {
+ const m = v.measurements;
+ if (!m) { put('meas', '<div class="empty">No run log.</div>'); return; }
+ text('meas-sub', m.pops_rounds.length + ' pops rounds, ' + m.moab.length + ' MOAB, ' + m.aim_checks.length + ' aim checks');
+ let html = '<h3>pops_round: measured against estimated</h3>' + (m.pops_rounds.length ? '<table><tr><th>Round</th><th class="num">RBE</th><th class="num">Pops</th><th class="num">Est (reach)</th><th class="num">Lives lost</th><th>Per tower (pops / est)</th></tr>'
+  + m.pops_rounds.map(r => '<tr><td>' + r.round + '</td><td class="num">' + num(r.rbe) + '</td><td class="num">' + num(r.pops) + '</td><td class="num">' + num(r.est_reach) + '</td><td class="num">' + num(r.lives_lost) + '</td><td class="muted">'
+   + (r.towers ?? []).map(t => '#' + t.id + ' ' + esc(t.base_id) + ' ' + num(t.pops) + '/' + num(t.est_reach)).join(', ') + '</td></tr>').join('') + '</table>' : '<div class="empty">None yet (bridge 0.3.13 or later).</div>');
+ html += '<h3>moab_measure</h3>' + (m.moab.length ? '<table><tr><th>Round</th><th>Types</th><th class="num">Measured/s</th><th class="num">Estimated/s</th><th class="num">Ratio</th><th class="num">Seconds</th></tr>'
+  + m.moab.map(r => '<tr><td>' + r.round + '</td><td>' + esc((r.types ?? []).join(', ')) + '</td><td class="num">' + num(r.measured_dps, 1) + '</td><td class="num">' + num(r.estimated_dps, 1) + '</td><td class="num">' + num(r.ratio) + '</td><td class="num">' + num(r.seconds, 1) + '</td></tr>').join('') + '</table>' : '<div class="empty">None yet.</div>');
+ html += '<h3>aim_check</h3>' + (m.aim_checks.length ? '<table><tr><th>Round</th><th>Tower</th><th>Action</th><th class="num">Gained</th><th class="num">Game s</th></tr>'
+  + m.aim_checks.map(r => '<tr><td>' + r.round + '</td><td>#' + r.tower_id + ' ' + esc(r.base_id) + '</td><td>' + esc(r.action) + '</td><td class="num">' + num(r.gained) + '</td><td class="num">' + num(r.game_seconds, 1) + (r.complete ? '' : ' <span class="muted">(open)</span>') + '</td></tr>').join('') + '</table>' : '<div class="empty">' + (m.aims ? m.aims + ' aims, no check finished yet.' : 'No aimed towers.') + '</div>');
+ put('meas', html);
+}
+
+function renderHistory(v) {
+ const s = v.history.series, list = s.length ? s : v.history.recent;
+ text('hist-sub', s.length ? 'current series (same speed, ruleset, bridge, setup and pinned factors)' : 'latest runs');
+ put('history', table([
+  ['Start', r => time(r.time)], ['Port', r => num(r.bridge_port)], ['Policy', r => esc((r.policy ?? '-').replace('btd6-', '')) + (r.revision != null ? ' r' + r.revision : '')],
+  ['Result', r => r.result ? '<span class="' + (r.result === 'victory' ? 'good' : 'bad') + '">' + esc(r.result) + '</span>' : r.ended ? esc(r.ended) : '<span class="muted">running</span>'],
+  ['Round', r => num(r.round), true], ['Lives', r => num(r.lives), true], ['Min', r => num(r.minutes, 1), true], ['Decisions', r => num(r.decisions), true], ['Tokens', r => r.input_tokens ? r.input_tokens.toLocaleString() : '-', true],
+ ], list, 'No runs yet.'));
+}
+
+function renderFoot(v) {
+ const b = v.bridge;
+ put('foot', '<b>Where the figures come from.</b> Recomputed: margins, gradeFor, caps, danger signals, the round checks and tower estimates, with this checkout\'s speed.mjs, estimate.mjs, moab.mjs, threat.mjs and hard-rounds.mjs on the latest state and the calibration the run recorded. '
+  + 'From the log: decisions, speed changes, plans, measurements and results. The state is the bridge\'s when it answers (GET only, about once a second), otherwise the last state a decision recorded. '
+  + 'The dashboard sends no commands and writes nothing.<br>Bridge: ' + (!b ? 'none' : !b.enabled ? 'reads off' : b.up ? 'up since ' + time(b.since) + ', last read ' + time(b.at) : 'down since ' + time(b.since) + ': ' + esc(b.error)) + ' - track paths: ' + (v.paths.count ? v.paths.count + ' from the bridge' : 'none') + ' - page updated ' + time(v.now));
+}
+
+let last = null;
+function render(v) { renderHeader(v); renderStats(v); renderSpeed(v); renderRounds(v); renderTowers(v); renderSets(v); renderDecisions(v); renderPlan(v); renderMeasurements(v); renderHistory(v); renderFoot(v); }
+async function refresh() {
+ try {
+  const r = await fetch('/api/view', {cache: 'no-store'});
+  if (!r.ok) throw Error('HTTP ' + r.status);
+  last = await r.json();
+  render(last);
+ } catch (e) { text('conn', 'dashboard server not answering'); $('dot').className = 'dot off'; }
+}
+refresh(); setInterval(refresh, 1000);
+</script></body></html>

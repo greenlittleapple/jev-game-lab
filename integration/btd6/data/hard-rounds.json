@@ -1,0 +1,212 @@
+{
+ "generated_by": "integration/btd6/hard-rounds.mjs",
+ "round_data": "Btd6ModHelper/btd6-game-data f818c39 56.0",
+ "thresholds": {
+  "rbe_record": 1.5,
+  "burst": 2,
+  "burst_min_rbe": 500,
+  "camo_layered": 15
+ },
+ "logs": {
+  "runs": 33,
+  "from": "2026-09-30T01:35:46.974Z",
+  "to": "2026-09-30T19:42:45.597Z"
+ },
+ "default": {
+  "rounds": {
+   "2": [
+    "rbe_record:1.75"
+   ],
+   "4": [
+    "rbe_record:2.03"
+   ],
+   "10": [
+    "rbe_record:2.22"
+   ],
+   "24": [
+    "first:camo"
+   ],
+   "27": [
+    "rbe_record:2.23"
+   ],
+   "28": [
+    "first:lead"
+   ],
+   "40": [
+    "first:moab"
+   ],
+   "43": [
+    "burst:2.89"
+   ],
+   "45": [
+    "first:fortified"
+   ],
+   "49": [
+    "rbe_record:1.73"
+   ],
+   "51": [
+    "camo_layered:15"
+   ],
+   "56": [
+    "camo_layered:40"
+   ],
+   "60": [
+    "first:bfb"
+   ],
+   "62": [
+    "camo_layered:15"
+   ],
+   "63": [
+    "rbe_record:3.02"
+   ],
+   "74": [
+    "camo_layered:25"
+   ],
+   "76": [
+    "burst:10.17"
+   ],
+   "78": [
+    "rbe_record:1.56",
+    "camo_layered:72"
+   ],
+   "80": [
+    "first:zomg"
+   ],
+   "90": [
+    "first:ddt"
+   ],
+   "100": [
+    "first:bad"
+   ]
+  }
+ },
+ "setups": {
+  "Tutorial/Hard/Clicks": {
+   "end_round": 100,
+   "rounds": {
+    "6": [
+     "lost:3/3"
+    ]
+   }
+  },
+  "Tutorial/Hard/Standard": {
+   "end_round": 80,
+   "rounds": {
+    "2": [
+     "rbe_record:1.75"
+    ],
+    "3": [
+     "lost:7/8"
+    ],
+    "4": [
+     "rbe_record:2.03",
+     "lost:15/19"
+    ],
+    "5": [
+     "lost:7/20"
+    ],
+    "6": [
+     "lost:2/3"
+    ],
+    "7": [
+     "lost:4/4"
+    ],
+    "8": [
+     "lost:4/3"
+    ],
+    "9": [
+     "lost:6/15"
+    ],
+    "10": [
+     "rbe_record:2.22",
+     "lost:1/22"
+    ],
+    "15": [
+     "lost:4/12"
+    ],
+    "19": [
+     "lost:1/1"
+    ],
+    "23": [
+     "lost:1/5"
+    ],
+    "24": [
+     "first:camo"
+    ],
+    "26": [
+     "lost:1/14"
+    ],
+    "27": [
+     "rbe_record:2.23"
+    ],
+    "28": [
+     "first:lead"
+    ],
+    "31": [
+     "lost:3/94"
+    ],
+    "33": [
+     "lost:3/24"
+    ],
+    "36": [
+     "lost:3/45"
+    ],
+    "37": [
+     "lost:3/51"
+    ],
+    "40": [
+     "first:moab",
+     "lost:4/86"
+    ],
+    "42": [
+     "lost:2/5"
+    ],
+    "43": [
+     "burst:2.89"
+    ],
+    "45": [
+     "first:fortified"
+    ],
+    "49": [
+     "rbe_record:1.73",
+     "lost:2/66"
+    ],
+    "51": [
+     "camo_layered:15",
+     "lost:5/105"
+    ],
+    "56": [
+     "camo_layered:40",
+     "lost:2/45"
+    ],
+    "60": [
+     "first:bfb"
+    ],
+    "62": [
+     "camo_layered:15"
+    ],
+    "63": [
+     "rbe_record:3.02"
+    ],
+    "74": [
+     "camo_layered:25"
+    ],
+    "75": [
+     "lost:1/35"
+    ],
+    "76": [
+     "burst:10.17",
+     "lost:1/652"
+    ],
+    "78": [
+     "rbe_record:1.56",
+     "camo_layered:72",
+     "lost:2/97"
+    ],
+    "80": [
+     "first:zomg"
+    ]
+   }
+  }
+ }
+}

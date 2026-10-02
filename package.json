@@ -1,0 +1,31 @@
+{
+  "name": "jev-game-lab",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "test": "node --test \"core/*.test.mjs\" \"integration/btd6/*.test.mjs\" \"checks/*.test.mjs\"",
+    "btd6:strategy": "node integration/btd6/strategy-cli.mjs",
+    "btd6:bridge": "node --env-file-if-exists=.env integration/btd6/bridge-cli.mjs",
+    "btd6:mods": "node --env-file-if-exists=.env integration/btd6/mods-toggle.mjs",
+    "btd6:scorecard": "node integration/btd6/scorecard.mjs",
+    "btd6:progress": "node integration/btd6/progress-chart.mjs",
+    "btd6:bridge-test": "dotnet run --project integration/btd6-bridge-tests/BridgeTests.csproj -c Release",
+    "btd6:run": "node --env-file-if-exists=.env integration/btd6/run-cli.mjs",
+    "btd6:spots": "node --env-file-if-exists=.env integration/btd6/spots-cli.mjs",
+    "btd6:rules-audit": "node integration/btd6/rules-audit.mjs",
+    "btd6:moab-replay": "node integration/btd6/moab-replay.mjs",
+    "btd6:threat-replay": "node integration/btd6/threat-replay.mjs",
+    "btd6:camo-replay": "node integration/btd6/camo-replay.mjs",
+    "btd6:hard-rounds": "node integration/btd6/hard-rounds.mjs",
+    "btd6:early-ratios": "node integration/btd6/early-ratios.mjs",
+    "btd6:speed-replay": "node integration/btd6/speed-replay.mjs",
+    "btd6:pops-study": "node integration/btd6/pops-study.mjs",
+    "btd6:pops-derive": "node integration/btd6/pops-derive.mjs",
+    "btd6:dashboard": "node --env-file-if-exists=.env integration/btd6/dashboard-server.mjs"
+  }
+}

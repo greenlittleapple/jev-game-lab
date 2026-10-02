@@ -1,0 +1,102 @@
+{
+ "playbook_version": "1.1.0",
+ "id": "monkey-meadow-hard-standard",
+ "setup": {"map": "Tutorial", "difficulty": "Hard", "mode": "Standard", "start_round": 3, "end_round": 80},
+ "summary": "Two camo Dart Monkeys hold the early rounds, one Bomb Shooter covers lead and becomes the MOAB tower, two Snipers cover camo lead, and two Sticky Bomb Ninjas carry the BFB and ZOMG rounds.",
+ "note": "Written from the btd6-claude-v1 match of 2026-09-30 (plans 1 to 15). Fixes from that match: the Bomb Shooter is one target taken to 0-4-2 so it can't be upgraded down path 3, and the second Ninja is placed by round 70. 1.1.0 adds 4-0-2 Darts: series 6 lost at 76 and 78, 7-10% short of the Ceramics.",
+ "hero": {"tower": "Quincy", "round_from": 10},
+ "phases": [
+  {
+   "id": "opening", "from_round": 3, "to_round": 23,
+   "summary": "Two Dart Monkeys to 0-2-2 for early damage and camo, Quincy, then a Bomb Shooter for lead.",
+   "build": [
+    {"id": "darts", "tower": "DartMonkey", "tiers": "0-2-2", "count": 2, "round_from": 3, "round_by": 14, "priority": 1},
+    {"id": "bomb", "tower": "BombShooter", "tiers": "0-2-2", "round_from": 16, "round_by": 26, "priority": 2}
+   ],
+   "cash_hold": [],
+   "threats": [
+    {"threat": "camo", "by_round": 22, "answer": "darts"},
+    {"threat": "purple", "by_round": 25, "answer": "darts"},
+    {"threat": "lead", "by_round": 27, "answer": "bomb"}
+   ]
+  },
+  {
+   "id": "first_moab", "from_round": 24, "to_round": 39,
+   "summary": "The Bomb Shooter goes to MOAB Mauler 0-3-2 by round 36 with cash held for it; the Darts get Triple Shot for extra MOAB damage.",
+   "build": [
+    {"id": "darts", "tower": "DartMonkey", "tiers": "0-3-2", "count": 2, "round_from": 30, "round_by": 38, "priority": 2},
+    {"id": "bomb", "tower": "BombShooter", "tiers": "0-3-2", "round_from": 24, "round_by": 36, "priority": 1}
+   ],
+   "cash_hold": [{"from_round": 31, "to_round": 36, "amount": 1100, "for": ["bomb"]}],
+   "threats": [
+    {"threat": "camo", "by_round": 24, "answer": "darts"},
+    {"threat": "purple", "by_round": 25, "answer": "darts"},
+    {"threat": "lead", "by_round": 28, "answer": "bomb"},
+    {"threat": "ceramic", "by_round": 38, "answer": "bomb"},
+    {"threat": "moab", "by_round": 38, "answer": "bomb"}
+   ]
+  },
+  {
+   "id": "bfb", "from_round": 40, "to_round": 59,
+   "summary": "MOAB Assassin 0-4-2 on the Bomb Shooter by round 50, two Snipers 1-1-0 for camo lead, then a Sticky Bomb Ninja 2-0-4 by round 59 for the BFB.",
+   "build": [
+    {"id": "darts", "tower": "DartMonkey", "tiers": "0-3-2", "count": 2, "round_from": 30, "round_by": 38, "priority": 2},
+    {"id": "bomb", "tower": "BombShooter", "tiers": "0-4-2", "round_from": 40, "round_by": 50, "priority": 1},
+    {"id": "snipers", "tower": "SniperMonkey", "tiers": "1-1-0", "count": 2, "round_from": 44, "round_by": 56, "priority": 2},
+    {"id": "ninja", "tower": "NinjaMonkey", "tiers": "2-0-4", "round_from": 51, "round_by": 59, "priority": 1}
+   ],
+   "cash_hold": [
+    {"from_round": 44, "to_round": 50, "amount": 3500, "for": ["bomb"]},
+    {"from_round": 52, "to_round": 58, "amount": 6000, "for": ["ninja"]}
+   ],
+   "threats": [
+    {"threat": "fortified", "by_round": 45, "answer": "bomb"},
+    {"threat": "moab", "by_round": 50, "answer": "bomb"},
+    {"threat": "camo_lead", "by_round": 59, "answer": "snipers"},
+    {"threat": "bfb", "by_round": 60, "answer": "ninja"}
+   ]
+  },
+  {
+   "id": "zomg", "from_round": 60, "to_round": 80,
+   "summary": "A second Sticky Bomb Ninja by round 70, two 4-0-2 Darts by 74, both Snipers to 4-2-0 by 78. In series 6, v5 lost at 76 and 78 with Snipers and Bomb Shooters 7-10% short of the Ceramic bursts.",
+   "build": [
+    {"id": "darts", "tower": "DartMonkey", "tiers": "0-3-2", "count": 2, "round_from": 30, "round_by": 38, "priority": 2},
+    {"id": "jugg", "tower": "DartMonkey", "tiers": "4-0-2", "count": 2, "round_from": 62, "round_by": 74, "priority": 1, "note": "Juggernauts that see camo, for the Ceramic rounds 76 and 78"},
+    {"id": "bomb", "tower": "BombShooter", "tiers": "0-4-2", "round_from": 40, "round_by": 50, "priority": 1},
+    {"id": "ninja", "tower": "NinjaMonkey", "tiers": "2-0-4", "round_from": 51, "round_by": 59, "priority": 1},
+    {"id": "ninja2", "tower": "NinjaMonkey", "tiers": "2-0-4", "round_from": 60, "round_by": 70, "priority": 1},
+    {"id": "snipers", "tower": "SniperMonkey", "tiers": "4-2-0", "count": 2, "round_from": 66, "round_by": 78, "priority": 2}
+   ],
+   "cash_hold": [
+    {"from_round": 61, "to_round": 69, "amount": 7000, "for": ["ninja2", "jugg"]},
+    {"from_round": 71, "to_round": 78, "amount": 5000, "for": ["snipers", "jugg"]}
+   ],
+   "threats": [
+    {"threat": "bfb", "by_round": 60, "answer": "ninja"},
+    {"threat": "fortified_moab", "by_round": 62, "answer": "ninja"},
+    {"threat": "zomg", "by_round": 78, "answer": "ninja2"},
+    {"threat": "ddt", "by_round": 90, "answer": "snipers"}
+   ]
+  }
+ ],
+ "branches": [
+  {"id": "moab_first", "when": {"rounds": [30, 40], "moab_short": {"within": 8}},
+   "override": {"focus": ["bomb"]},
+   "note": "Short of MOAB damage before round 40: the Bomb Shooter's upgrades go before everything else."},
+  {"id": "moab_bfb", "when": {"rounds": [52, 64], "moab_short": {"within": 8}},
+   "override": {"focus": ["ninja"]},
+   "note": "Short for the BFB rounds: the first Sticky Bomb Ninja goes first."},
+  {"id": "moab_zomg", "when": {"rounds": [66, 80], "moab_short": {"within": 12}},
+   "override": {"focus": ["ninja2", "snipers"]},
+   "note": "Short for the ZOMG: the second Ninja, then the Sniper upgrades, go first."},
+  {"id": "leak_fix", "when": {"lives_lost": {"rounds": 3, "at_least": 5}},
+   "override": {"lift_holds": true, "build": [{"id": "leakfix", "tower": "SniperMonkey", "tiers": "2-1-0", "round_from": 3, "round_by": 80, "priority": 1}]},
+   "note": "Five or more lives lost in three rounds: holds are lifted and a camo and lead Sniper, which covers the whole track, is added."},
+  {"id": "no_spot", "when": {"no_free_spot": true},
+   "override": {"defer_unplaceable": true},
+   "note": "No free spot for the next tower: that target is dropped for now so cash goes to upgrades."},
+  {"id": "surplus", "when": {"rounds": [10, 76], "cash_above": {"margin": 3000}},
+   "override": {"bring_forward": 8},
+   "note": "Cash well above the next purchase: later targets start up to 8 rounds early."}
+ ]
+}

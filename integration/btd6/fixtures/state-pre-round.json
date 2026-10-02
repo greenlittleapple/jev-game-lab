@@ -1,0 +1,8 @@
+{
+ "api": 1, "bridge_version": "0.1.0", "game_version": "56.3", "screen": "in_game", "ready": true,
+ "paused": false, "fast_forward": false, "auto_start": true, "pending_actions": 0,
+ "match": {"id": "20260929T200000Z-1", "map": "Tutorial", "mode": "Standard", "difficulty": "Hard", "game_type": "Standard", "coop": false, "sandbox": false, "result": null},
+ "round": {"index": 2, "active": false, "before_first_wave": true},
+ "cash": 650, "lives": 100, "starting_lives": 100, "max_lives": 5000,
+ "towers": [], "unlock_all": true, "towers_hash": "empty"
+}

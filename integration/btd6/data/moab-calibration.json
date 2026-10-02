@@ -1,0 +1,8 @@
+{
+ "version": 1,
+ "default": {
+  "factor": 2.0,
+  "basis": "Hypothesis, not a measurement. In the btd6-claude-v1 match of 2026-09-30 on Monkey Meadow Hard Standard (bridge 0.3.10, which reports no MOAB health), round 40 was cleared with no lives lost at an estimated 17.4 MOAB damage per second against 36 needed (at least 2.07x), and the round-80 ZOMG at 112 against 324 (at least 2.9x). 2.0 stays below both lower bounds. Replaced per setup by live measurements (moab-calibration.mjs)."
+ },
+ "setups": {}
+}

@@ -1,0 +1,13 @@
+{
+ "api": 1, "bridge_version": "0.1.0", "game_version": "56.3", "screen": "in_game", "ready": true,
+ "paused": false, "fast_forward": false, "auto_start": true, "pending_actions": 0,
+ "match": {"id": "20260929T200000Z-1", "map": "Tutorial", "mode": "Standard", "difficulty": "Hard", "game_type": "Standard", "coop": false, "sandbox": false, "result": null},
+ "round": {"index": 20, "active": true, "before_first_wave": false},
+ "cash": 1200, "lives": 98, "starting_lives": 100, "max_lives": 5000,
+ "towers": [
+  {"id": 7, "base_id": "DartMonkey", "name": "DartMonkey-020", "tiers": [0, 2, 0], "x": -60.2, "y": 20.4, "targeting": "First", "is_hero": false,
+   "next_upgrades": [{"id": "Sharp Shots", "path": 0, "tier": 0, "cost": 150, "unlocked": true}, {"id": "Triple Shot", "path": 1, "tier": 2, "cost": 430, "unlocked": true}, {"id": "Long Range Darts", "path": 2, "tier": 0, "cost": 95, "unlocked": false}]},
+  {"id": 9, "base_id": "Quincy", "name": "Quincy 3", "tiers": [0, 0, 0], "x": 10, "y": 30, "targeting": "First", "is_hero": true, "next_upgrades": []}
+ ],
+ "unlock_all": true, "towers_hash": "a1b2c3"
+}

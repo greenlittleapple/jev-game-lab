@@ -1,0 +1,32 @@
+{
+ "note": "The first live btd6-jev-v0 run: Monkey Meadow (Tutorial) Hard CHIMPS, $650, round 6 before the first wave, no towers. The state is as logged; the tower IDs are the 18 the run offered, with illustrative costs and ranges (all affordable, as they were), plus a Banana Farm it could not afford.",
+ "state": {
+  "api": 1, "bridge_version": "0.3.2", "game_version": "56.3", "screen": "in_game", "ready": true,
+  "paused": false, "fast_forward": false, "auto_start": true, "pending_actions": 0,
+  "match": {"id": "20260930T013548Z-1", "map": "Tutorial", "mode": "Clicks", "difficulty": "Hard", "game_type": "Standard", "coop": false, "sandbox": false, "result": null, "double_cash_used": false},
+  "round": {"index": 5, "active": false, "before_first_wave": true},
+  "cash": 650, "lives": 1, "starting_lives": 1, "max_lives": 1,
+  "towers": [], "unlock_all": true, "towers_hash": "empty"
+ },
+ "towers": [
+  {"id": "Quincy", "name": "Quincy", "cost": 540, "range": 50, "is_hero": true},
+  {"id": "DartMonkey", "name": "Dart Monkey", "cost": 200, "range": 32},
+  {"id": "BoomerangMonkey", "name": "Boomerang Monkey", "cost": 325, "range": 43},
+  {"id": "BombShooter", "name": "Bomb Shooter", "cost": 525, "range": 40},
+  {"id": "TackShooter", "name": "Tack Shooter", "cost": 260, "range": 23},
+  {"id": "IceMonkey", "name": "Ice Monkey", "cost": 500, "range": 20},
+  {"id": "GlueGunner", "name": "Glue Gunner", "cost": 275, "range": 46},
+  {"id": "Desperado", "name": "Desperado", "cost": 300, "range": 40},
+  {"id": "SniperMonkey", "name": "Sniper Monkey", "cost": 350, "range": 30},
+  {"id": "MortarMonkey", "name": "Mortar Monkey", "cost": 600, "range": 30},
+  {"id": "WizardMonkey", "name": "Wizard Monkey", "cost": 375, "range": 40},
+  {"id": "NinjaMonkey", "name": "Ninja Monkey", "cost": 500, "range": 40},
+  {"id": "Alchemist", "name": "Alchemist", "cost": 550, "range": 45},
+  {"id": "Druid", "name": "Druid", "cost": 400, "range": 35},
+  {"id": "Mermonkey", "name": "Mermonkey", "cost": 400, "range": 38},
+  {"id": "Skywarden", "name": "Skywarden", "cost": 600, "range": 40},
+  {"id": "EngineerMonkey", "name": "Engineer Monkey", "cost": 350, "range": 40},
+  {"id": "BeastHandler", "name": "Beast Handler", "cost": 250, "range": 40},
+  {"id": "BananaFarm", "name": "Banana Farm", "cost": 1250, "range": 20}
+ ]
+}
