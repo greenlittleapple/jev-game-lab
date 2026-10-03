@@ -86,7 +86,7 @@ test('the progress data keeps Hard Standard and CHIMPS as separate series, with 
 
 test('the progress data: every Hard Standard run by version, wins marked, no empty row for a version whose runs are all in speed series', async () => {
  const {setupViews} = await import('./progress.mjs');
- const {progressTable, progressSvg, THEMES} = await import('../../core/progress-chart.mjs');
+ const {progressTable, progressSvg, THEMES, issueMarker} = await import('../../core/progress-chart.mjs');
  const {readFile} = await import('node:fs/promises');
  const data = JSON.parse(await readFile(new URL('../../docs/progress/btd6.json', import.meta.url), 'utf8'));
  const v = name => data.versions.find(x => x.name === name);
@@ -139,7 +139,17 @@ test('the progress data: every Hard Standard run by version, wins marked, no emp
  // v5 51, 56, 51; v5 r2 78; v5 r3 51; v6 78.
  const affected = hard.versions.flatMap(x => x.runs).filter(r => r.result !== 'stopped' && r.issues?.length).length;
  assert.equal((svg.match(/<circle [^>]*fill="#fcfcfb" stroke="/g) ?? []).length, affected, 'one hollow dot per finished run with a known issue');
- assert.equal((progressSvg(setupViews(data)[1].view, THEMES.light).match(/Hollow dots/g) ?? []).length, 0, 'CHIMPS has no affected run');
+ // In every setup, each run tagged with a known issue is drawn hollow (if finished) and marked with its letters in the table.
+ for (const {setup, view} of setupViews(data)) {
+  const runs = view.versions.flatMap(x => x.runs).filter(r => r.issues?.length);
+  const setupSvg = progressSvg(view, THEMES.light), setupTable = progressTable(view);
+  const finishedAffected = runs.filter(r => r.result !== 'stopped').length;
+  assert.equal((setupSvg.match(/<circle [^>]*fill="#fcfcfb" stroke="/g) ?? []).length, finishedAffected, `${setup.id}: one hollow dot per finished affected run`);
+  assert.equal(setupSvg.includes('Hollow dots: runs affected'), finishedAffected > 0, `${setup.id}: the hollow-dot legend shows when a run is affected`);
+  const rowText = setupTable.split('\n').filter(l => l.startsWith('| ')).join('\n');
+  assert.equal((rowText.match(/<sup>[a-z,]+<\/sup>/g) ?? []).length, runs.length, `${setup.id}: each affected run is marked in its table`);
+  for (const r of runs) assert.ok(rowText.includes(`<sup>${r.issues.map(id => issueMarker(data, id)).join(',')}</sup>`), `${setup.id}: ${r.run} marked`);
+ }
  for (const row of hard.versions) if (row.runs.some(r => r.result !== 'stopped')) assert.ok(svg.includes(`${row.name}: best round `), `summary lists ${row.name}`);
  const rowsWithWin = hard.versions.filter(x => x.runs.some(r => r.result === 'won')).length;
  assert.equal((svg.match(/✓ won/g) ?? []).length, rowsWithWin, 'each row whose best run won is marked');

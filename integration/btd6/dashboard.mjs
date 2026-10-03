@@ -12,8 +12,8 @@ import {join} from 'node:path';
 import {BETWEEN_ROUNDS_SUFFIX, BUYING_MS, EMERGENCIES, MIN_SPEED, SLOW_CONSULTS, compositionCap, dangerProgress, dangerSignals, defenceMargins,
  GRADE_AT, GRADE_AT_CAMO, gradeFor, isPurchase, moabOutrun, observedSpeed, parseSpeedMode, speedCaps} from './speed.mjs';
 import {effectivePps, popsCalibration, roundCheck, roundFacts, earlyMarginFor, setEarlyMargin, setPopsCalibration, towerEstimate} from './estimate.mjs';
-import {moabCalibration, moabCheck, moabDps, setMoabCalibration, setDdtCheck, ddtCheckFor, setMoabDdtLead, moabDdtLeadFor, towerMoab, MOAB_LEAD_ROUNDS} from './moab.mjs';
-import {THREAT_KINDS_V4, THREAT_BURST_ROUNDS, LEAD_CAPACITY_AT, threatShort, leadDdtFor, leadAtFor} from './threat.mjs';
+import {moabCalibration, moabCheck, moabDps, setMoabCalibration, setDdtCheck, ddtCheckFor, setMoabDdtLead, moabDdtLeadFor, setDdtSupport, ddtSupportFor, setDdtNeed, ddtNeedFor, towerMoab, MOAB_LEAD_ROUNDS} from './moab.mjs';
+import {THREAT_KINDS_V4, THREAT_BURST_ROUNDS, LEAD_CAPACITY_AT, threatShort, leadDdtFor, leadAtFor, camoRateFor} from './threat.mjs';
 import {hardRoundsFor} from './hard-rounds.mjs';
 import {moabShort} from './policy-v4.mjs';
 import {pressureTracker} from './policy-v3.mjs';
@@ -266,6 +266,9 @@ function applyCalibration(start) {
  setDdtCheck(ddtCheckFor(start?.policy, start?.policy_revision ?? 0));
  // moab_short's lead for DDT rounds by the run's policy and revision (moab.mjs MOAB_DDT_LEAD_FROM).
  setMoabDdtLead(moabDdtLeadFor(start?.policy, start?.policy_revision ?? 0));
+ // The support-effects DDT figure and the deadline-based need by the run's policy and revision (moab.mjs DDT_SUPPORT_FROM, DDT_NEED_FROM).
+ setDdtSupport(ddtSupportFor(start?.policy, start?.policy_revision ?? 0));
+ setDdtNeed(ddtNeedFor(start?.policy, start?.policy_revision ?? 0));
  // gradedSpeed's calibrated flag: the setup's MOAB calibration was measured (session.mjs: calibration.runs > 0).
  const measured = s => typeof s === 'string' && s.startsWith('measured');
  return {moab: moabCalibration(), pops: popsCalibration(), moab_source: moab?.source ?? null, pops_source: pops?.source ?? null,
@@ -310,8 +313,8 @@ export function speedPanel(state, {paths = [], mode = null, hard = null, calibra
 }
 
 // The upcoming rounds from the round data, each with the hard-round reasons and the checks the rules use.
-// leadDdt: count DDTs in lead_capacity's Lead RBE, as the run's revision did (threat.mjs leadDdtFor); leadAt: its threshold (leadAtFor).
-export function roundsPanel(state, {paths = [], hard = null, calibrated = false, count = UPCOMING_ROUNDS, leadDdt = false, leadAt = LEAD_CAPACITY_AT} = {}) {
+// leadDdt: count DDTs in lead_capacity's Lead RBE, as the run's revision did (threat.mjs leadDdtFor); leadAt: its threshold (leadAtFor); camoRate: camo_capacity on the camo rate (camoRateFor).
+export function roundsPanel(state, {paths = [], hard = null, calibrated = false, count = UPCOMING_ROUNDS, leadDdt = false, leadAt = LEAD_CAPACITY_AT, camoRate = false} = {}) {
  const now = state.round.number, end = state.match.end_round ?? 100, lives = state.lives;
  const out = [];
  for (let r = now; r <= Math.min(end, now + count); r++) {
@@ -325,7 +328,7 @@ export function roundsPanel(state, {paths = [], hard = null, calibrated = false,
     burst_ratio: c.burst_facts?.ratio ?? null, enough: c.enough} : null,
    moab: m ? {bloons: m.bloons, dps: m.dps, needs_dps: m.needs_dps, ratio: m.ratio, enough: m.enough} : null});
  }
- return {rounds: out, threat_short: threatShort(state, paths, {kinds: THREAT_KINDS_V4, burstLead: THREAT_BURST_ROUNDS, leadDdt, leadAt}), end_round: end};
+ return {rounds: out, threat_short: threatShort(state, paths, {kinds: THREAT_KINDS_V4, burstLead: THREAT_BURST_ROUNDS, leadDdt, leadAt, camoRate}), end_round: end};
 }
 
 // The towers on the map, with the estimates the rules use and the pops the bridge counts (0.3.13).
@@ -415,7 +418,7 @@ export function buildView({run = null, bridge = null, paths = [], history = [], 
   match, speed,
   speed_log: run ? {sets: run.speedSets.slice(-12).reverse(), count: run.speedSetCount, time: speedTime} : null,
   rounds: active ? roundsPanel(state, {paths, hard, calibrated: cal.calibrated, leadDdt: leadDdtFor(start?.policy ?? session?.policy, start?.policy_revision ?? 0),
-   leadAt: leadAtFor(start?.policy ?? session?.policy, start?.policy_revision ?? 0)}) : null,
+   leadAt: leadAtFor(start?.policy ?? session?.policy, start?.policy_revision ?? 0), camoRate: camoRateFor(start?.policy ?? session?.policy, start?.policy_revision ?? 0)}) : null,
   hard_source: hard?.source ?? null,
   decisions: run ? {items: run.decisions.slice(-60).reverse(), counts: run.counts, tokens: run.tokens, rules: run.ruleCounts, overrides: run.overrideCounts} : null,
   plan: run ? planPanel(run, playbook) : null,

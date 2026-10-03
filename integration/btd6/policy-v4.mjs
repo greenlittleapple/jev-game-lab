@@ -15,6 +15,7 @@ import {floorRulesV3, groupOptionsV3, jevQuestionV3, rankV3, withReach, after} f
 import {groupOptions, MAX_CHOICES} from './policy-v1.mjs';
 import {moabCheck, moabDps, moabDue, nextMoabRound, ddtCheckOn, moabDdtLead, hasDdtRound, MOAB_LEAD_ROUNDS} from './moab.mjs';
 import {applyEarlyShort} from './early.mjs';
+import {expectedIncome} from './income.mjs';
 import {applyThreatShort, answerPool, LEAD_CAPACITY_AT, threatOrder, threatChecks, capacityAnswers, burstPerDollar, camoPerDollar, leadPerDollar, withBindAnswers, THREAT_KINDS, THREAT_KEEP} from './threat.mjs';
 
 export const JEV_POLICY_V4 = 'btd6-jev-v4';
@@ -31,11 +32,17 @@ const spends = c => c.details?.kind === 'place' || c.details?.kind === 'upgrade'
 // Options with the MOAB damage per second each purchase adds (details.moab), on top of v3's reach and pops. With the DDT
 // check (moab.mjs setDdtCheck, from btd6-jev-v6 revision 13) it is the gain in moabCheck's figure for the round in focus
 // (moabFocus): the DDT-capable damage when that round's toughest need is a DDT's, every tower's otherwise, as before.
-export function withMoab(state, candidates, paths = []) {
- const focus = ddtCheckOn() && state.round ? moabFocus(state, paths) : null;
+// focus (optional): the round the gains are for, in place of moabFocus (moabNearest's round).
+export function withMoab(state, candidates, paths = [], {focus: round = null} = {}) {
+ const focus = round ?? (ddtCheckOn() && state.round ? moabFocus(state, paths) : null);
  const figure = focus == null ? towers => moabDps(towers, paths) : towers => moabCheck(towers, focus, {lives: state.lives, paths}).dps;
  const now = figure(state.towers);
  return candidates.map(c => spends(c) && !('moab' in c.details) ? {...c, details: {...c.details, moab: +(figure(after(state, c)) - now).toFixed(2)}} : c);
+}
+// The nearest MOAB-class round due (moabDue, as moabShort) that is short with a ratio below `below`, or null.
+export function moabNearestShort(state, paths = [], below = MOAB_BIND_RATIO) {
+ const due = moabDue(state.towers, state.round.number, {lives: state.lives, paths, end: state.match.end_round ?? 100});
+ return due.filter(c => !c.enough && c.ratio < below).sort((a, b) => a.round - b.round)[0] ?? null;
 }
 // The MOAB-class round the gains are for: moab_short's round, else the next MOAB-class round within MOAB_FACTS_ROUNDS, or null.
 export function moabFocus(state, paths = []) {
@@ -88,7 +95,7 @@ export function moabShort(state, paths = [], {ddtLead} = {}) {
 // check kind stands and threat_short's Lead, camo and camo Lead answers stay. Once a DDT-capable purchase is affordable the
 // binding takes over. Series 1h match 4 (log 2026-10-02T00-29-52) lost at round 90 with nothing affordable that added
 // DDT-capable damage from round 86, at 13.5 against 99.3 needed.
-// moabCapacity (from v6 revision 19, v5 revision 23 and claude-v1 revision 22; false gives revision 18): with lives <= 1, while
+// moabCapacity (v6 revision 19, v5 revision 23 and claude-v1 revision 22 only; off again from v6 revision 20, v5 revision 24 and claude-v1 revision 23): with lives <= 1, while
 // the short round has DDTs ('ddt_dps' and hasDdtRound, as the saving tests it) and moab_short binds or saves, threat_short's
 // camo_capacity and lead_capacity answers that are affordable and within THREAT_KEEP of their kind's best gain per dollar
 // stay (threat.mjs capacityAnswers), after the Lead, camo and camo Lead answers and before the MOAB adders (binding) or the
@@ -98,45 +105,86 @@ export function moabShort(state, paths = [], {ddtLead} = {}) {
 // those it allows). Rounds without DDTs, and so Hard Standard, are unchanged. In series 1j (revision 18) camo_capacity was
 // deferred to moab_short 27, 8, 1, 17 and 0 times in the five matches; three of the five losses leaked camo regrowing Ceramics
 // first, and match 2 (log 2026-10-02T05-50-38) waited through rounds 92 and 93 at a camo margin of 0.73 with $9,002 to $13,674.
-// ddtGapShare (same revisions; 0 gives revision 18): the DDT saving targets the cheapest pool purchase whose MOAB gain for the
+// ddtSaveBest (from v6 revision 20, v5 revision 24 and claude-v1 revision 23; false gives the cheapest adder): the DDT saving
+// targets the pool purchase with the most MOAB gain per dollar for its round (withMoab's details.moab, the DDT-capable figure for a
+// DDT round; ties: the cheaper) instead of the cheapest one that adds any. The binding is unchanged. In the revision 20 replay
+// (threat-replay --ddt-need) the cheapest adders were a $595 Alchemist (gain 0.1 to 0.4) and the $16,200 Dart 5-0-2 (gain 2 to 3,
+// 0.19 per $1,000), while Sniper 3-0-2 and 2-0-3 upgrades at about $2,400 added about 21 (about 9 per $1,000).
+// ddtGapShare (the same revisions only; 0, as revision 18 and from revision 20): the DDT saving targets the cheapest pool purchase whose MOAB gain for the
 // short round (withMoab's details.moab, in the same DDT-capable figure as short.dps) is at least this share (DDT_GAP_SHARE) of
 // the gap short.needs_dps - short.dps (needs_dps includes the lives margin). Without one it doesn't save, and moab_short orders
-// the MOAB adders and removes "Wait" and "Start round" as from moabBindBelow to 1. The record adds gap and gain. Four of the
+// the MOAB adders and removes "Wait" and "Start round" as from moabBindBelow to 1. The record adds gap and gain (with any share; before revision 20 only with a share above 0). Four of the
 // five series 1j matches saved for a $16,200 Dart 5-0-2 credited with about 3 damage per second; match 2 bought one at round 88
 // (40.9 to 43.8 against 99.3 needed), then saved for a second until it lost at round 93 with $13,674.
+// moabNearest (from v6 revision 20, v5 revision 24 and claude-v1 revision 23; false gives revision 19): with lives <= 1, the
+// binding and the DDT saving target the nearest due round whose ratio is below moabBindBelow (moabNearestShort) instead of the
+// weakest due round: the MOAB gains that rank the binding's answers, and the saving's gap and quarter-gap target, are for that
+// round, and the moab_short record names it (round) with the weakest as weakest when they differ. Without such a round the
+// weakest stands, as for the ordering between moabBindBelow and 1. Series 1k match 4 (revision 19, log 2026-10-02T20-46-18)
+// saved at round 89 for a $34,560 upgrade aimed at round 99 (gain 110.2 of a 124.8 gap) and at rounds 91 and 92 for a $34,560
+// upgrade aimed at round 100 (gain about 183 of a 480 gap), and lost at round 93 with $85.
+// capacityNearer (from v6 revision 21, v5 revision 25 and claude-v1 revision 24; false gives the earlier revisions): with lives
+// <= 1, while moab_short has MOAB adders, a camo_capacity or lead_capacity round before moab_short's short round is not set
+// aside: threat_short evaluates those kinds (threat.mjs capacityBefore) and, when it binds, its binding stands (its answers,
+// with revision 11's choice under the cap) and moab_short neither binds nor saves at that decision; its MOAB adders keep
+// their order among the options threat_short leaves. A MOAB round as near or nearer keeps the earlier behaviour. In the
+// revision 21 replay camo_capacity was set aside at round 36 (round 40 in view) before the round-37 camo loss of series 1k
+// match 1, and at rounds 76 and 77 (round 80 in view) before the round-78 loss of match 3.
+// ddtReach (from v6 revision 22, v5 revision 26 and claude-v1 revision 25; false gives the earlier revisions): the DDT saving
+// considers only pool purchases it can reach, those whose cost is at most the cash plus the expected income of the rounds that
+// complete before its round starts (income.mjs expectedIncome over the current round + 1 to the short round - 1, from
+// data/income-chimps.json; the current round's remaining income isn't counted). ddtSaveBest's choice (or the cheapest) is made
+// among those; with none it doesn't save, and moab_short orders the MOAB adders as from moabBindBelow to 1. The record adds
+// income (the expected income) and reach (the cash plus it). Series 1l matches 4 and 8 and series 1k match 4 saved for $23,220
+// to $34,560 upgrades with cash peaking at $7,000 to $17,500, and lost at round 93.
+// capacitySame (the same revisions; false gives the earlier revisions): with lives <= 1, when moab_short binds or saves and
+// threat_short's camo_capacity (past camoBindShare's bar) or lead_capacity is due at moab_short's short round, threat_short
+// evaluates those kinds (threat.mjs capacityAt) and their answers stay under the binding and the saving, as moabCapacity's do:
+// affordable answers within THREAT_KEEP of their kind's best gain per dollar (capacityAnswers), after the check answers and
+// before the MOAB adders (binding) or the pass options (saving); the record carries kept_capacity. capacityNearer's earlier
+// round still goes first. Series 1l matches 4 and 8 lost at round 93 to camo regrowing Ceramics while camo_capacity for round
+// 93 was deferred to the DDT saving.
 // context: {paths, leaks, pressure} as for v3; pool (optional): threat_short's saving pool, a list or a function returning it, in place of
 // answerPool (the replays and fixtures pass the purchases the logs show, threat-replay.mjs poolFor).
-export function floorRulesV4(state, candidates, context = {}, {threatShort = false, threatKinds = THREAT_KINDS, threatOptions = {}, earlyShort = false, earlyBinding = true, threatBinding = true, moabBinding = false, moabBindBelow = MOAB_BIND_RATIO, moabSaving = false, moabCapacity = false, ddtGapShare = 0} = {}) {
+export function floorRulesV4(state, candidates, context = {}, {threatShort = false, threatKinds = THREAT_KINDS, threatOptions = {}, earlyShort = false, earlyBinding = true, threatBinding = true, moabBinding = false, moabBindBelow = MOAB_BIND_RATIO, moabSaving = false, moabCapacity = false, ddtGapShare = 0, moabNearest = false, ddtSaveBest = false, capacityNearer = false, ddtReach = false, capacitySame = false} = {}) {
  const base = floorRulesV3(state, candidates, context);
  if (!state.in_game || state.popup) return base;
  const paths = context.paths ?? [];
- let kept = withMoab(state, base.candidates, paths);
+ const weakest = moabShort(state, paths);
+ const nearest = moabNearest && weakest && state.lives <= 1 ? moabNearestShort(state, paths, moabBindBelow) : null;
+ const short = nearest ?? weakest;
+ let kept = withMoab(state, base.candidates, paths, nearest ? {focus: nearest.round} : {});
  const rules = [...(base.constraint?.rules ?? [])];
- const short = moabShort(state, paths);
+ const aside = nearest && nearest.round !== weakest.round ? {weakest: weakest.round} : {};
  let unbound = null;
  // Most MOAB damage added per dollar first.
  const binds = Boolean(short) && moabBinding && state.lives <= 1 && short.ratio < moabBindBelow;
  const adders = short ? kept.filter(addsMoab).sort((x, y) => y.details.moab / y.details.cost - x.details.moab / x.details.cost) : [];
  if (adders.length) {
   const next = kept.filter(c => c.details?.kind !== 'start_round' && c.details?.kind !== 'wait');
-  if (next.length < kept.length || binds) rules.push({kind: 'moab_short', removed: kept.length - next.length, round: short.round, dps: short.dps, needs_dps: short.needs_dps});
+  if (next.length < kept.length || binds) rules.push({kind: 'moab_short', removed: kept.length - next.length, round: short.round, dps: short.dps, needs_dps: short.needs_dps, ...aside});
   kept = [...adders, ...next.filter(c => !adders.includes(c))];
  }
  const ddtRound = Boolean(short) && 'ddt_dps' in short && hasDdtRound(short.round);
  // moabCapacity: threat_short run again with camo and Lead capacity evaluated under moab_short's adders (held), used only
  // when moab_short binds or saves.
  const holding = moabCapacity && binds && ddtRound;
- let held = null;
+ // capacitySame: the same with only the kinds due at moab_short's short round (threat.mjs capacityAt).
+ const same = !holding && capacitySame && binds;
+ let held = null, nearerBound = false;
  if (threatShort) {
-  const options = {paths, kinds: threatKinds, burstLead: threatOptions.burstLead, burstGain: threatOptions.burstGain === true, leadDdt: threatOptions.leadDdt === true, leadAt: threatOptions.leadAt ?? LEAD_CAPACITY_AT, moabFirst: adders.length > 0, all: candidates, pool: context.pool ?? (() => answerPool(state, context)), pressure: context.pressure ?? null, binding: threatBinding};
+  const options = {paths, kinds: threatKinds, burstLead: threatOptions.burstLead, burstGain: threatOptions.burstGain === true, leadDdt: threatOptions.leadDdt === true, leadAt: threatOptions.leadAt ?? LEAD_CAPACITY_AT, camoRate: threatOptions.camoRate === true, camoBindShare: threatOptions.camoBindShare ?? 0, moabFirst: adders.length > 0,
+   ...(capacityNearer && state.lives <= 1 && adders.length ? {capacityBefore: short.round} : {}), all: candidates, pool: context.pool ?? (() => answerPool(state, context)), pressure: context.pressure ?? null, binding: threatBinding};
   const threat = applyThreatShort(state, kept, options);
   // Only when threat_short stood aside: when it fired, the two runs are the same.
-  if (holding && adders.length && !threat.rule) {
-   const more = applyThreatShort(state, kept, {...options, capacityUnderMoab: true});
+  if ((holding || same) && adders.length && !threat.rule) {
+   const more = applyThreatShort(state, kept, {...options, ...(holding ? {capacityUnderMoab: true} : {capacityAt: short.round})});
    if (more.rule) held = more;
   }
   if (threat.rule) { rules.push(threat.rule); kept = threat.candidates; }
   if (threat.unbound) unbound = threat.unbound;
+  // capacityNearer: a nearer capacity round's binding stands; moab_short doesn't bind or save over it.
+  if (threat.nearer && threat.rule?.binding) nearerBound = true;
  }
  // The options moab_short's binding and saving work from, and threat_short's record once they act.
  const source = () => held ? held.unbound?.candidates ?? held.candidates : unbound?.candidates ?? kept;
@@ -144,14 +192,14 @@ export function floorRulesV4(state, candidates, context = {}, {threatShort = fal
   if (held) rules.push(held.unbound ? {...held.unbound.rule, binding: false, deferred_to: 'moab_short'} : held.rule);
   else if (unbound) rules[rules.findIndex(r => r.kind === 'threat_short')] = {...unbound.rule, binding: false, deferred_to: 'moab_short'};
  };
- const capacity = holding ? options => capacityAnswers(options, state.cash) : () => [];
- if (binds && adders.length) {
+ const capacity = holding || (same && held) ? options => capacityAnswers(options, state.cash) : () => [];
+ if (binds && adders.length && !nearerBound) {
   const bound = applyMoabBinding(state, source(), rules, capacity);
   if (bound) { defer(); kept = bound; unbound = null; held = null; }
  }
  let saved = false;
- if (moabSaving && binds && !adders.some(c => !(c.details.cost > state.cash)) && ddtRound) {
-  const saving = saveForDdt(state, source(), short, rules, {paths, all: candidates, pool: context.pool ?? (() => answerPool(state, context)), pressure: context.pressure ?? null, capacity, gapShare: ddtGapShare});
+ if (moabSaving && binds && !nearerBound && !adders.some(c => !(c.details.cost > state.cash)) && ddtRound) {
+  const saving = saveForDdt(state, source(), short, rules, {paths, all: candidates, pool: context.pool ?? (() => answerPool(state, context)), pressure: context.pressure ?? null, capacity, gapShare: ddtGapShare, best: ddtSaveBest, reach: ddtReach, focus: nearest?.round ?? null, aside});
   if (saving) { defer(); kept = saving; unbound = null; held = null; saved = true; }
  }
  if (earlyShort && !saved) {
@@ -192,13 +240,17 @@ function applyMoabBinding(state, options, rules, capacity = () => []) {
 // bound); all: the options before any rule. Returns the options (threat_short's Lead, camo and camo Lead answers, then the pass
 // options), or null when it doesn't save, and puts the saving on the moab_short record in rules (added before threat_short's if not there).
 // capacity(options): the camo and Lead capacity answers kept after the check answers (moabCapacity); gapShare: the share of the
-// gap the target must add (ddtGapShare; 0, any MOAB gain, by default).
-function saveForDdt(state, options, short, rules, {paths, all, pool, pressure, capacity = () => [], gapShare = 0}) {
+// gap the target must add (ddtGapShare; 0, any MOAB gain, by default); reach (ddtReach): only targets within the cash plus the
+// expected income of the rounds before the short round.
+function saveForDdt(state, options, short, rules, {paths, all, pool, pressure, capacity = () => [], gapShare = 0, best = false, reach = false, focus = null, aside = {}}) {
  if (pressure?.active || rules.some(r => r.kind === 'threat_short' && r.saving != null)) return null;
- const list = withMoab(state, typeof pool === 'function' ? pool() : pool ?? [], paths).filter(addsMoab).sort((a, b) => (a.details.cost ?? 1e9) - (b.details.cost ?? 1e9));
+ const list = withMoab(state, typeof pool === 'function' ? pool() : pool ?? [], paths, focus != null ? {focus} : {}).filter(addsMoab).sort((a, b) => (a.details.cost ?? 1e9) - (b.details.cost ?? 1e9));
  // Both in moabCheck's figure for the short round: details.moab is the gain in short.dps (the DDT-capable figure for a DDT round).
  const gap = short.needs_dps - short.dps;
- const target = gapShare > 0 ? list.find(c => c.details.moab >= gapShare * gap) : list[0];
+ const income = reach ? expectedIncome(state.round.number + 1, short.round - 1) : null;
+ const fit = (gapShare > 0 ? list.filter(c => c.details.moab >= gapShare * gap) : list).filter(c => !reach || c.details.cost <= state.cash + income);
+ // best (ddtSaveBest): the most gain per dollar, ties to the cheaper (list is by cost, and the sort keeps that order on ties).
+ const target = best ? [...fit].sort((a, b) => b.details.moab / b.details.cost - a.details.moab / a.details.cost)[0] : fit[0];
  if (!target || !(target.details.cost > state.cash)) return null;
  const passes = all.filter(c => c.details?.kind === 'wait' || c.details?.kind === 'start_round');
  if (!passes.length) return null;
@@ -207,9 +259,9 @@ function saveForDdt(state, options, short, rules, {paths, all, pool, pressure, c
  const next = [...checks, ...held, ...passes];
  let i = rules.findIndex(r => r.kind === 'moab_short');
  // Before threat_short's record, where moab_short's goes when it removes "Wait".
- if (i < 0) { const t = rules.findIndex(r => r.kind === 'threat_short'); i = t < 0 ? rules.length : t; rules.splice(i, 0, {kind: 'moab_short', removed: 0, round: short.round, dps: short.dps, needs_dps: short.needs_dps}); }
+ if (i < 0) { const t = rules.findIndex(r => r.kind === 'threat_short'); i = t < 0 ? rules.length : t; rules.splice(i, 0, {kind: 'moab_short', removed: 0, round: short.round, dps: short.dps, needs_dps: short.needs_dps, ...aside}); }
  rules[i] = {...rules[i], ratio: short.ratio, removed: options.filter(c => !next.includes(c)).length, saving: target.details.cost, for: target.id, cash: Math.floor(state.cash),
-  ...(gapShare > 0 ? {gap: +gap.toFixed(1), gain: target.details.moab} : {}),
+  gap: +gap.toFixed(1), gain: target.details.moab, ...(reach ? {income, reach: Math.floor(state.cash + income)} : {}),
   ...(checks.length ? {kept_threat: checks.length} : {}), ...(held.length ? {kept_capacity: held.length} : {}), ...(passes.some(c => !options.includes(c)) ? {restored: passes.map(c => c.id)} : {})};
  return next;
 }

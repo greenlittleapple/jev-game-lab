@@ -149,7 +149,7 @@ test('majority wait: any purchase for v6, on-plan purchases for v5 revision 4 an
  }
  assert.equal(btd6Game(() => context, {policy: 'btd6-jev-v4'}).majorityWait, undefined);
  assert.equal(MAJORITY_WAIT.threshold, 0.5);
- assert.deepEqual([V5_REVISION, CLAUDE_V1_REVISION, claudeGameV1(() => context).revision], [23, 22, 22]);
+ assert.deepEqual([V5_REVISION, CLAUDE_V1_REVISION, claudeGameV1(() => context).revision], [26, 25, 25]);
  // v5 and claude-v1 keep v4's floor rules; their tower cap follows the plan filters (game.constrain, tests below).
  const state = between(20);
  assert.ok(places(playbookGameV5(() => context, {playbook}).rules(state, options(state)).candidates).includes('SniperMonkey'));

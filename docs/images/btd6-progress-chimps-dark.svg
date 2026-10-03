@@ -1,161 +1,191 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1326" viewBox="0 0 960 1326" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
-<title id="t">How far each version got</title><desc id="d">v0: best round 6; v1: best round 6; v2: best round 6; v6 r5 (btd6-open-v3) graded: best round 6; v6 r6 (btd6-open-v3) graded: best round 6; v6 r7 (btd6-open-v3) graded: best round 6; v6 r8 (btd6-open-v3) graded: best round 76; v6 r9 (btd6-open-v3) graded: best round 95; v6 r10 (btd6-open-v3) graded: best round 78; v6 r11 (btd6-open-v3): best round 90; v6 r11 (btd6-open-v3) graded: best round 93; v6 r14 (btd6-open-v3) graded: best round 95; v6 r17 (btd6-open-v3): best round 93; v6 r17 (btd6-open-v3) graded: best round 95; v6 r18 (btd6-open-v3): best round 95; v6 r18 (btd6-open-v3) graded: best round 95; v6 r19 (btd6-open-v3) graded: best round 93</desc>
-<rect width="960" height="1326" rx="12" fill="#1a1a19"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1450" viewBox="0 0 960 1450" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+<title id="t">How far each version got</title><desc id="d">v0: best round 6; v1: best round 6; v2: best round 6; v6 r5 (btd6-open-v3) graded: best round 6; v6 r6 (btd6-open-v3) graded: best round 6; v6 r7 (btd6-open-v3) graded: best round 6; v6 r8 (btd6-open-v3) graded: best round 76; v6 r9 (btd6-open-v3) graded: best round 95; v6 r10 (btd6-open-v3) graded: best round 78; v6 r11 (btd6-open-v3): best round 90; v6 r11 (btd6-open-v3) graded: best round 93; v6 r14 (btd6-open-v3) graded: best round 95; v6 r17 (btd6-open-v3): best round 93; v6 r17 (btd6-open-v3) graded: best round 95; v6 r18 (btd6-open-v3): best round 95; v6 r18 (btd6-open-v3) graded: best round 95; v6 r19 (btd6-open-v3) graded: best round 93; v6 r21 (btd6-open-v3) graded: best round 95; v6 r22 (btd6-open-v3) graded: best round 95</desc>
+<rect width="960" height="1450" rx="12" fill="#1a1a19"/>
 <text x="24" y="40" font-size="20" font-weight="600" fill="#ffffff" text-anchor="start">How far each version got</text>
 <text x="24" y="64" font-size="14" font-weight="400" fill="#c3c2b7" text-anchor="start">Bloons TD 6, Monkey Meadow, CHIMPS (rounds 6 to 100, 1 life); ruleset btd6-open-v1 unless the row names another. Each</text>
 <text x="24" y="84" font-size="14" font-weight="400" fill="#c3c2b7" text-anchor="start">dot is one run, green if it won; the bar reaches the best run.</text>
-<text x="657.2" y="120" font-size="13" font-weight="600" fill="#c3c2b7" text-anchor="middle">Camo</text>
-<text x="657.2" y="137" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 24</text>
-<text x="702" y="120" font-size="13" font-weight="600" fill="#c3c2b7" text-anchor="middle">MOAB</text>
-<text x="702" y="137" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 40</text>
-<text x="758" y="120" font-size="13" font-weight="600" fill="#c3c2b7" text-anchor="middle">BFB</text>
-<text x="758" y="137" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 60</text>
-<text x="814" y="120" font-size="13" font-weight="600" fill="#c3c2b7" text-anchor="middle">ZOMG</text>
-<text x="814" y="137" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 80</text>
-<text x="870" y="120" font-size="13" font-weight="600" fill="#c3c2b7" text-anchor="middle">BAD</text>
-<text x="870" y="137" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 100</text>
-<line x1="590" y1="150" x2="590" y2="1240" stroke="#383835" stroke-width="1"/>
-<line x1="657.2" y1="150" x2="657.2" y2="1240" stroke="#2c2c2a" stroke-width="1"/>
-<line x1="702" y1="150" x2="702" y2="1240" stroke="#2c2c2a" stroke-width="1"/>
-<line x1="758" y1="150" x2="758" y2="1240" stroke="#2c2c2a" stroke-width="1"/>
-<line x1="814" y1="150" x2="814" y2="1240" stroke="#2c2c2a" stroke-width="1"/>
-<line x1="870" y1="150" x2="870" y2="1240" stroke="#2c2c2a" stroke-width="1"/>
-<circle cx="30" cy="171" r="6" fill="#3987e5"/>
-<text x="44" y="176" font-size="14" font-weight="600" fill="#ffffff" text-anchor="start">Jev only</text>
-<text x="24" y="206" font-size="15"><tspan font-weight="600" fill="#ffffff">v0</tspan><tspan fill="#898781" font-size="13"> · 1 run</tspan></text>
-<text x="24" y="226" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">Jev alone over every affordable placement, upgrade and wait (73 options at the start)</text>
-<path d="M590,211 H603.8 A3,3 0 0 1 606.8,214 V214 A3,3 0 0 1 603.8,217 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="606.8" cy="214" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="618.8" y="219" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
-<text x="24" y="258" font-size="15"><tspan font-weight="600" fill="#ffffff">v1</tspan><tspan fill="#898781" font-size="13"> · 1 run</tspan></text>
-<text x="24" y="278" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">Defence floor rules (no starting or waiting while undefended), known answers and track</text>
-<text x="24" y="296" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">coverage per option, at most 16 options per question</text>
-<path d="M590,272 H603.8 A3,3 0 0 1 606.8,275 V275 A3,3 0 0 1 603.8,278 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="606.8" cy="275" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="618.8" y="280" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
-<text x="24" y="328" font-size="15"><tspan font-weight="600" fill="#ffffff">v2</tspan><tspan fill="#898781" font-size="13"> · 1 run</tspan></text>
-<text x="24" y="348" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">Floor from each round's bloons: estimated pops against RBE with a margin for the lives</text>
-<text x="24" y="366" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">left, camo, lead and early-track checks; Quincy ranked early</text>
-<path d="M590,342 H603.8 A3,3 0 0 1 606.8,345 V345 A3,3 0 0 1 603.8,348 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="606.8" cy="345" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="618.8" y="350" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
-<text x="24" y="398" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r5 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 3 runs</tspan></text>
-<text x="24" y="418" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v4 plus fixed rules that later revisions extend (each revision is described in</text>
-<text x="24" y="436" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">docs/PLAN.md and policy-v6.mjs). The first two: waiting gives way to the most probable</text>
-<text x="24" y="454" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">purchase when more than half of Jev's probability is on purchases, and no new placements</text>
-<text x="24" y="472" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">(other than the hero) while 12 or more towers are placed. Later ones, with one life</text>
-<text x="24" y="490" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">(CHIMPS, or Hard Standard in zero-leak mode): when a coming round is short of pops,</text>
-<text x="24" y="508" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">camo, Lead or MOAB damage, the options are cut to the purchases that answer it, saving</text>
-<text x="24" y="526" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">for one when none is affordable. v6 revision 5 under ruleset btd6-open-v3 with graded</text>
-<text x="24" y="544" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">game speed (--speed graded)</text>
-<path d="M590,466 H603.8 A3,3 0 0 1 606.8,469 V469 A3,3 0 0 1 603.8,472 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="606.8" cy="462" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="606.8" cy="469" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="606.8" cy="476" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="618.8" y="474" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
-<text x="24" y="576" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r6 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 3 runs</tspan></text>
-<text x="24" y="596" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 6 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
-<path d="M590,581 H603.8 A3,3 0 0 1 606.8,584 V584 A3,3 0 0 1 603.8,587 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="606.8" cy="577" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="606.8" cy="584" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="606.8" cy="591" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="618.8" y="589" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
-<text x="24" y="628" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r7 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 3 runs</tspan></text>
-<text x="24" y="648" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 7 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
-<path d="M590,633 H603.8 A3,3 0 0 1 606.8,636 V636 A3,3 0 0 1 603.8,639 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="606.8" cy="629" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="606.8" cy="636" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="606.8" cy="643" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="618.8" y="641" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
-<text x="24" y="680" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r8 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 5 runs · 0 of 5 won, median round 33</tspan></text>
-<text x="24" y="700" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 8 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
-<path d="M590,685 H799.8 A3,3 0 0 1 802.8,688 V688 A3,3 0 0 1 799.8,691 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="802.8" cy="688" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="682.4" cy="684.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="682.4" cy="691.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="657.2" cy="688" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="668.4" cy="688" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="814.8" y="693" font-size="13" font-weight="600"><tspan fill="#ffffff">76</tspan></text>
-<text x="24" y="732" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r9 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 5 runs · 0 of 5 won, median round 78</tspan></text>
-<text x="24" y="752" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 9 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
-<path d="M590,737 H853 A3,3 0 0 1 856,740 V740 A3,3 0 0 1 853,743 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="856" cy="740" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="842" cy="740" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="808.4" cy="736.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="808.4" cy="743.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="668.4" cy="740" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="868" y="745" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
-<text x="24" y="784" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r10 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 2 runs</tspan></text>
-<text x="24" y="804" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 10 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
-<path d="M590,789 H805.4 A3,3 0 0 1 808.4,792 V792 A3,3 0 0 1 805.4,795 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="732.8" cy="792" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="808.4" cy="792" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="820.4" y="797" font-size="13" font-weight="600"><tspan fill="#ffffff">78</tspan></text>
-<text x="24" y="836" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r11 (btd6-open-v3)</tspan><tspan fill="#898781" font-size="13"> · 3 runs</tspan></text>
-<text x="24" y="856" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 11 under ruleset btd6-open-v3</text>
-<path d="M590,841 H839 A3,3 0 0 1 842,844 V844 A3,3 0 0 1 839,847 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="842" cy="844" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="668.4" cy="840.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="668.4" cy="847.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="854" y="849" font-size="13" font-weight="600"><tspan fill="#ffffff">90</tspan></text>
-<text x="24" y="888" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r11 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 7 runs · 0 of 7 won, median round 90</tspan></text>
-<text x="24" y="908" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 11 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
-<path d="M590,893 H847.4 A3,3 0 0 1 850.4,896 V896 A3,3 0 0 1 847.4,899 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="668.4" cy="896" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="850.4" cy="896" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="842" cy="882" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="842" cy="889" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="842" cy="896" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="842" cy="903" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="842" cy="910" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="862.4" y="901" font-size="13" font-weight="600"><tspan fill="#ffffff">93</tspan></text>
-<text x="24" y="940" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r14 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 5 runs · 0 of 5 won, median round 76</tspan></text>
-<text x="24" y="960" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 14 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
-<path d="M590,945 H853 A3,3 0 0 1 856,948 V948 A3,3 0 0 1 853,951 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="693.6" cy="948" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="856" cy="948" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="702" cy="948" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="842" cy="948" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="802.8" cy="948" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="868" y="953" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
-<text x="24" y="992" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r17 (btd6-open-v3)</tspan><tspan fill="#898781" font-size="13"> · 2 runs</tspan></text>
-<text x="24" y="1012" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 17 under ruleset btd6-open-v3</text>
-<path d="M590,997 H847.4 A3,3 0 0 1 850.4,1000 V1000 A3,3 0 0 1 847.4,1003 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="668.4" cy="1000" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="850.4" cy="1000" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="862.4" y="1005" font-size="13" font-weight="600"><tspan fill="#ffffff">93</tspan></text>
-<text x="24" y="1044" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r17 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 1 run</tspan></text>
-<text x="24" y="1064" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 17 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
-<path d="M590,1049 H853 A3,3 0 0 1 856,1052 V1052 A3,3 0 0 1 853,1055 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="856" cy="1052" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="868" y="1057" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
-<text x="24" y="1096" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r18 (btd6-open-v3)</tspan><tspan fill="#898781" font-size="13"> · 1 run</tspan></text>
-<text x="24" y="1116" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 18 under ruleset btd6-open-v3</text>
-<path d="M590,1101 H853 A3,3 0 0 1 856,1104 V1104 A3,3 0 0 1 853,1107 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="856" cy="1104" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="868" y="1109" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
-<text x="24" y="1148" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r18 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 9 runs · 0 of 9 won, median round 95</tspan></text>
-<text x="24" y="1168" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 18 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
-<path d="M590,1153 H853 A3,3 0 0 1 856,1156 V1156 A3,3 0 0 1 853,1159 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="850.4" cy="1149" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="850.4" cy="1156" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="850.4" cy="1163" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="856" cy="1142" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="856" cy="1149" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="856" cy="1156" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="856" cy="1163" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="856" cy="1170" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="808.4" cy="1156" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="868" y="1161" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
-<text x="24" y="1200" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r19 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 4 runs</tspan></text>
-<text x="24" y="1220" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 19 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
-<path d="M590,1205 H847.4 A3,3 0 0 1 850.4,1208 V1208 A3,3 0 0 1 847.4,1211 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
-<circle cx="682.4" cy="1208" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="850.4" cy="1208" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="842" cy="1208" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<circle cx="693.6" cy="1208" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
-<text x="862.4" y="1213" font-size="13" font-weight="600"><tspan fill="#ffffff">93</tspan></text>
-<text x="24" y="1266" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">Every run listed up to 2026-09-30 19:24 UTC used the first MOAB requirement, which asked for about 2.9 times the damage needed to</text>
-<text x="24" y="1284" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">kill each MOAB-class bloon before the exit; it fired in 72 rounds of the logs against 22 with the current requirement (afb132a,</text>
-<text x="24" y="1302" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">4f0d9c0; docs/PLAN.md, "MOAB requirement replay").</text>
+<text x="24" y="104" font-size="13" font-weight="400" fill="#c3c2b7" text-anchor="start">Hollow dots: runs affected by a known issue (see the table notes).</text>
+<text x="657.2" y="140" font-size="13" font-weight="600" fill="#c3c2b7" text-anchor="middle">Camo</text>
+<text x="657.2" y="157" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 24</text>
+<text x="702" y="140" font-size="13" font-weight="600" fill="#c3c2b7" text-anchor="middle">MOAB</text>
+<text x="702" y="157" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 40</text>
+<text x="758" y="140" font-size="13" font-weight="600" fill="#c3c2b7" text-anchor="middle">BFB</text>
+<text x="758" y="157" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 60</text>
+<text x="814" y="140" font-size="13" font-weight="600" fill="#c3c2b7" text-anchor="middle">ZOMG</text>
+<text x="814" y="157" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 80</text>
+<text x="870" y="140" font-size="13" font-weight="600" fill="#c3c2b7" text-anchor="middle">BAD</text>
+<text x="870" y="157" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 100</text>
+<line x1="590" y1="170" x2="590" y2="1364" stroke="#383835" stroke-width="1"/>
+<line x1="657.2" y1="170" x2="657.2" y2="1364" stroke="#2c2c2a" stroke-width="1"/>
+<line x1="702" y1="170" x2="702" y2="1364" stroke="#2c2c2a" stroke-width="1"/>
+<line x1="758" y1="170" x2="758" y2="1364" stroke="#2c2c2a" stroke-width="1"/>
+<line x1="814" y1="170" x2="814" y2="1364" stroke="#2c2c2a" stroke-width="1"/>
+<line x1="870" y1="170" x2="870" y2="1364" stroke="#2c2c2a" stroke-width="1"/>
+<circle cx="30" cy="191" r="6" fill="#3987e5"/>
+<text x="44" y="196" font-size="14" font-weight="600" fill="#ffffff" text-anchor="start">Jev only</text>
+<text x="24" y="226" font-size="15"><tspan font-weight="600" fill="#ffffff">v0</tspan><tspan fill="#898781" font-size="13"> · 1 run</tspan></text>
+<text x="24" y="246" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">Jev alone over every affordable placement, upgrade and wait (73 options at the start)</text>
+<path d="M590,231 H603.8 A3,3 0 0 1 606.8,234 V234 A3,3 0 0 1 603.8,237 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="606.8" cy="234" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="618.8" y="239" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
+<text x="24" y="278" font-size="15"><tspan font-weight="600" fill="#ffffff">v1</tspan><tspan fill="#898781" font-size="13"> · 1 run</tspan></text>
+<text x="24" y="298" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">Defence floor rules (no starting or waiting while undefended), known answers and track</text>
+<text x="24" y="316" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">coverage per option, at most 16 options per question</text>
+<path d="M590,292 H603.8 A3,3 0 0 1 606.8,295 V295 A3,3 0 0 1 603.8,298 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="606.8" cy="295" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="618.8" y="300" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
+<text x="24" y="348" font-size="15"><tspan font-weight="600" fill="#ffffff">v2</tspan><tspan fill="#898781" font-size="13"> · 1 run</tspan></text>
+<text x="24" y="368" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">Floor from each round's bloons: estimated pops against RBE with a margin for the lives</text>
+<text x="24" y="386" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">left, camo, lead and early-track checks; Quincy ranked early</text>
+<path d="M590,362 H603.8 A3,3 0 0 1 606.8,365 V365 A3,3 0 0 1 603.8,368 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="606.8" cy="365" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="618.8" y="370" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
+<text x="24" y="418" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r5 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 3 runs</tspan></text>
+<text x="24" y="438" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v4 plus fixed rules that later revisions extend (each revision is described in</text>
+<text x="24" y="456" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">docs/PLAN.md and policy-v6.mjs). The first two: waiting gives way to the most probable</text>
+<text x="24" y="474" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">purchase when more than half of Jev's probability is on purchases, and no new placements</text>
+<text x="24" y="492" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">(other than the hero) while 12 or more towers are placed. Later ones, with one life</text>
+<text x="24" y="510" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">(CHIMPS, or Hard Standard in zero-leak mode): when a coming round is short of pops,</text>
+<text x="24" y="528" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">camo, Lead or MOAB damage, the options are cut to the purchases that answer it, saving</text>
+<text x="24" y="546" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">for one when none is affordable. v6 revision 5 under ruleset btd6-open-v3 with graded</text>
+<text x="24" y="564" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">game speed (--speed graded)</text>
+<path d="M590,486 H603.8 A3,3 0 0 1 606.8,489 V489 A3,3 0 0 1 603.8,492 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="606.8" cy="482" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="606.8" cy="489" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="606.8" cy="496" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="618.8" y="494" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
+<text x="24" y="596" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r6 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 3 runs</tspan></text>
+<text x="24" y="616" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 6 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,601 H603.8 A3,3 0 0 1 606.8,604 V604 A3,3 0 0 1 603.8,607 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="606.8" cy="597" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="606.8" cy="604" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="606.8" cy="611" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="618.8" y="609" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
+<text x="24" y="648" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r7 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 3 runs</tspan></text>
+<text x="24" y="668" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 7 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,653 H603.8 A3,3 0 0 1 606.8,656 V656 A3,3 0 0 1 603.8,659 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="606.8" cy="649" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="606.8" cy="656" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="606.8" cy="663" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="618.8" y="661" font-size="13" font-weight="600"><tspan fill="#ffffff">6</tspan></text>
+<text x="24" y="700" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r8 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 5 runs · 0 of 5 won, median round 33</tspan></text>
+<text x="24" y="720" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 8 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,705 H799.8 A3,3 0 0 1 802.8,708 V708 A3,3 0 0 1 799.8,711 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="802.8" cy="708" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="682.4" cy="704.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="682.4" cy="711.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="657.2" cy="708" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="668.4" cy="708" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="814.8" y="713" font-size="13" font-weight="600"><tspan fill="#ffffff">76</tspan></text>
+<text x="24" y="752" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r9 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 5 runs · 0 of 5 won, median round 78</tspan></text>
+<text x="24" y="772" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 9 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,757 H853 A3,3 0 0 1 856,760 V760 A3,3 0 0 1 853,763 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="856" cy="760" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="842" cy="760" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="808.4" cy="756.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="808.4" cy="763.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="668.4" cy="760" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="868" y="765" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
+<text x="24" y="804" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r10 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 2 runs</tspan></text>
+<text x="24" y="824" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 10 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,809 H805.4 A3,3 0 0 1 808.4,812 V812 A3,3 0 0 1 805.4,815 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="732.8" cy="812" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="808.4" cy="812" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="820.4" y="817" font-size="13" font-weight="600"><tspan fill="#ffffff">78</tspan></text>
+<text x="24" y="856" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r11 (btd6-open-v3)</tspan><tspan fill="#898781" font-size="13"> · 3 runs</tspan></text>
+<text x="24" y="876" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 11 under ruleset btd6-open-v3</text>
+<path d="M590,861 H839 A3,3 0 0 1 842,864 V864 A3,3 0 0 1 839,867 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="842" cy="864" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="668.4" cy="860.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="668.4" cy="867.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="854" y="869" font-size="13" font-weight="600"><tspan fill="#ffffff">90</tspan></text>
+<text x="24" y="908" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r11 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 7 runs · 0 of 7 won, median round 90</tspan></text>
+<text x="24" y="928" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 11 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,913 H847.4 A3,3 0 0 1 850.4,916 V916 A3,3 0 0 1 847.4,919 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="668.4" cy="916" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="916" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="842" cy="902" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="842" cy="909" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="842" cy="916" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="842" cy="923" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="842" cy="930" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="862.4" y="921" font-size="13" font-weight="600"><tspan fill="#ffffff">93</tspan></text>
+<text x="24" y="960" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r14 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 5 runs · 0 of 5 won, median round 76</tspan></text>
+<text x="24" y="980" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 14 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,965 H853 A3,3 0 0 1 856,968 V968 A3,3 0 0 1 853,971 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="693.6" cy="968" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="856" cy="968" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="702" cy="968" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="842" cy="968" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="802.8" cy="968" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="868" y="973" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
+<text x="24" y="1012" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r17 (btd6-open-v3)</tspan><tspan fill="#898781" font-size="13"> · 2 runs</tspan></text>
+<text x="24" y="1032" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 17 under ruleset btd6-open-v3</text>
+<path d="M590,1017 H847.4 A3,3 0 0 1 850.4,1020 V1020 A3,3 0 0 1 847.4,1023 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="668.4" cy="1020" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1020" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="862.4" y="1025" font-size="13" font-weight="600"><tspan fill="#ffffff">93</tspan></text>
+<text x="24" y="1064" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r17 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 1 run</tspan></text>
+<text x="24" y="1084" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 17 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,1069 H853 A3,3 0 0 1 856,1072 V1072 A3,3 0 0 1 853,1075 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="856" cy="1072" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="868" y="1077" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
+<text x="24" y="1116" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r18 (btd6-open-v3)</tspan><tspan fill="#898781" font-size="13"> · 1 run</tspan></text>
+<text x="24" y="1136" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 18 under ruleset btd6-open-v3</text>
+<path d="M590,1121 H853 A3,3 0 0 1 856,1124 V1124 A3,3 0 0 1 853,1127 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="856" cy="1124" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="868" y="1129" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
+<text x="24" y="1168" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r18 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 14 runs · 0 of 14 won, median round 93</tspan></text>
+<text x="24" y="1188" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 18 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,1173 H853 A3,3 0 0 1 856,1176 V1176 A3,3 0 0 1 853,1179 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="850.4" cy="1162" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1169" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1176" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1183" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1190" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="856" cy="1162" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="856" cy="1169" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="856" cy="1176" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="856" cy="1183" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="856" cy="1190" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="808.4" cy="1176" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="668.4" cy="1172.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="668.4" cy="1179.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="746.8" cy="1176" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="868" y="1181" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
+<text x="24" y="1220" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r19 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 4 runs</tspan></text>
+<text x="24" y="1240" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 19 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,1225 H847.4 A3,3 0 0 1 850.4,1228 V1228 A3,3 0 0 1 847.4,1231 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="682.4" cy="1228" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1228" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="842" cy="1228" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="693.6" cy="1228" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="862.4" y="1233" font-size="13" font-weight="600"><tspan fill="#ffffff">93</tspan></text>
+<text x="24" y="1272" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r21 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 11 runs · 0 of 10 won, median round 93</tspan></text>
+<text x="24" y="1292" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 21 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,1277 H853 A3,3 0 0 1 856,1280 V1280 A3,3 0 0 1 853,1283 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="853.2" cy="1280" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1266" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1273" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1280" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1287" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1294" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="802.8" cy="1280" r="3.5" fill="#1a1a19" stroke="#3987e5" stroke-width="2"/>
+<circle cx="842" cy="1280" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="856" cy="1276.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="856" cy="1283.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="668.4" cy="1280" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="868" y="1285" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
+<text x="24" y="1324" font-size="15"><tspan font-weight="600" fill="#ffffff">v6 r22 (btd6-open-v3) graded</tspan><tspan fill="#898781" font-size="13"> · 5 runs · 0 of 5 won, median round 93</tspan></text>
+<text x="24" y="1344" font-size="13.5" font-weight="400" fill="#c3c2b7" text-anchor="start">v6 revision 22 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<path d="M590,1329 H853 A3,3 0 0 1 856,1332 V1332 A3,3 0 0 1 853,1335 H590 Z" fill="#3987e5" fill-opacity="0.5"/>
+<circle cx="693.6" cy="1332" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="755.2" cy="1332" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1328.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="850.4" cy="1335.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="856" cy="1332" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="868" y="1337" font-size="13" font-weight="600"><tspan fill="#ffffff">95</tspan></text>
+<text x="24" y="1390" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">Every run listed up to 2026-09-30 19:24 UTC used the first MOAB requirement, which asked for about 2.9 times the damage needed to</text>
+<text x="24" y="1408" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">kill each MOAB-class bloon before the exit; it fired in 72 rounds of the logs against 22 with the current requirement (afb132a,</text>
+<text x="24" y="1426" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">4f0d9c0; docs/PLAN.md, "MOAB requirement replay").</text>
 </svg>

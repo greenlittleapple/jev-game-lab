@@ -8,13 +8,13 @@ import {jevQuestion, JEV_POLICY} from './question.mjs';
 import {JEV_POLICY_V1, floorRules, groupOptions, jevQuestionV1} from './policy-v1.mjs';
 import {JEV_POLICY_V2, floorRulesV2, groupOptionsV2, jevQuestionV2} from './policy-v2.mjs';
 import {JEV_POLICY_V3, floorRulesV3, groupOptionsV3, jevQuestionV3} from './policy-v3.mjs';
-import {JEV_POLICY_V4, floorRulesV4, groupOptionsV4, jevQuestionV4, DDT_GAP_SHARE} from './policy-v4.mjs';
+import {JEV_POLICY_V4, floorRulesV4, groupOptionsV4, jevQuestionV4} from './policy-v4.mjs';
 import {JEV_POLICY_V6, floorRulesV6} from './policy-v6.mjs';
 import {CLAUDE_POLICY_V1, CLAUDE_V1_REVISION, PLAN_SCHEMA_V1, onPlanPurchases, STRATEGIST_INSTRUCTIONS_V1, strategistBriefV1, requestStampV1, adoptPlanV1, planFact} from './plan-v1.mjs';
 import {claudeTrigger} from './triggers-v1.mjs';
 import {constrainV1} from './rules-v1.mjs';
 import {PLAYBOOK_POLICY_V5, TIE_MARGIN, THREAT_LEAD, resolvePlaybook, tieBreakV5} from './playbook-v5.mjs';
-import {THREAT_KINDS_V4, THREAT_BURST_AHEAD} from './threat.mjs';
+import {THREAT_KINDS_V4, THREAT_OPTIONS_R21} from './threat.mjs';
 
 // Steps taken without a Jev call: dismissing an allowlisted screen, and aiming a tower (runner.mjs aimCandidate).
 export const FORCED_KINDS = ['dismiss_popup', 'aim_tower'];
@@ -58,6 +58,18 @@ const PLAN_NOTE = ' plan: the strategist plan (summary, the targets due now, cas
 // lead_capacity below 1.0 again from revision 21 (threatOptions: {...THREAT_BURST_AHEAD, leadAt: LEAD_CAPACITY_AT_R17} gives revision 20's floor).
 // From revision 22, moab_short's DDT binding and saving keep camo and Lead capacity answers, and the DDT saving targets only a
 // purchase that adds a quarter of the gap (policy-v4.mjs moabCapacity, ddtGapShare; moabCapacity: false, ddtGapShare: 0 give revision 21's floor).
+// From revision 23, the support-effects DDT figure and the deadline-based need in DDT rounds (moab.mjs setDdtSupport, setDdtNeed,
+// set by the session), the binding and DDT saving aimed at the nearest due round below 0.5 (policy-v4.mjs moabNearest), and the
+// DDT saving for the most gain per dollar (ddtSaveBest);
+// Revision 22's moabCapacity and ddtGapShare are off again (moabCapacity: false, ddtGapShare: 0, as revision 21; series 1k kept revision 18
+// over 19). setDdtSupport(false), setDdtNeed(false), moabNearest: false and ddtSaveBest: false give revision 21; with moabCapacity: true and
+// ddtGapShare: DDT_GAP_SHARE (policy-v4.mjs) as well, revision 22.
+// From revision 24, threat_short's camo_capacity on the camo rate (threat.mjs camoRate, THREAT_OPTIONS_R21), and with one life
+// a nearer camo or Lead capacity round not set aside by moab_short (policy-v4.mjs capacityNearer); threatOptions:
+// THREAT_BURST_AHEAD with capacityNearer: false gives revision 23's floor.
+// From revision 25, the DDT saving only for a purchase reachable before its round with the expected CHIMPS income, and camo and
+// Lead capacity answers due at moab_short's short round kept under its binding and saving (policy-v4.mjs ddtReach,
+// capacitySame; as btd6-jev-v6 revision 22); ddtReach: false and capacitySame: false give revision 24's floor.
 // openingTimeoutMs: how long the opening request is waited for before the first round.
 export function claudeGameV1(context = () => ({}), {openingTimeoutMs} = {}) {
  const facts = () => ({...context(), ...(openingTimeoutMs != null ? {openingTimeoutMs} : {})});
@@ -73,7 +85,7 @@ export function claudeGameV1(context = () => ({}), {openingTimeoutMs} = {}) {
   stamp: (state, candidates, trigger) => requestStampV1(state, trigger, facts()),
   adopt: adoptPlanV1,
   isLate: (request, state) => state.in_game && state.round.number > request.stamp.needed_by_round,
-  rules: (state, candidates) => floorRulesV4(state, candidates, context(), {threatShort: true, threatKinds: THREAT_KINDS_V4, threatOptions: THREAT_BURST_AHEAD, earlyShort: true, moabBinding: true, moabSaving: true, moabCapacity: true, ddtGapShare: DDT_GAP_SHARE}),
+  rules: (state, candidates) => floorRulesV4(state, candidates, context(), {threatShort: true, threatKinds: THREAT_KINDS_V4, threatOptions: THREAT_OPTIONS_R21, earlyShort: true, moabBinding: true, moabSaving: true, moabCapacity: false, ddtGapShare: 0, moabNearest: true, ddtSaveBest: true, capacityNearer: true, ddtReach: true, capacitySame: true}),
   constrain: (state, candidates, plan, status, {floor = null, all = null} = {}) => constrainV1(state, candidates, plan, facts(), {floor, all, towerCap: true}),
   group: (state, candidates) => { const c = context(); return groupOptionsV4(state, candidates, {catalog: c.catalog ?? [], paths: c.paths ?? [], pressure: c.pressure ?? null}); },
   question: (state, candidates, plan, status, {stage} = {}) => {
@@ -106,6 +118,18 @@ const PLAYBOOK_NOTE = ' plan: the prepared playbook for this round (summary, the
 // lead_capacity below 1.0 again from revision 22 (threatOptions: {...THREAT_BURST_AHEAD, leadAt: LEAD_CAPACITY_AT_R17} gives revision 21's floor).
 // From revision 23, moab_short's DDT binding and saving keep camo and Lead capacity answers, and the DDT saving targets only a
 // purchase that adds a quarter of the gap (policy-v4.mjs moabCapacity, ddtGapShare; moabCapacity: false, ddtGapShare: 0 give revision 22's floor).
+// From revision 24, the support-effects DDT figure and the deadline-based need in DDT rounds (moab.mjs setDdtSupport, setDdtNeed,
+// set by the session), the binding and DDT saving aimed at the nearest due round below 0.5 (policy-v4.mjs moabNearest), and the
+// DDT saving for the most gain per dollar (ddtSaveBest);
+// Revision 23's moabCapacity and ddtGapShare are off again (moabCapacity: false, ddtGapShare: 0, as revision 22; series 1k kept revision 18
+// over 19). setDdtSupport(false), setDdtNeed(false), moabNearest: false and ddtSaveBest: false give revision 22; with moabCapacity: true and
+// ddtGapShare: DDT_GAP_SHARE (policy-v4.mjs) as well, revision 23.
+// From revision 25, threat_short's camo_capacity on the camo rate (threat.mjs camoRate, THREAT_OPTIONS_R21), and with one life
+// a nearer camo or Lead capacity round not set aside by moab_short (policy-v4.mjs capacityNearer); threatOptions:
+// THREAT_BURST_AHEAD with capacityNearer: false gives revision 24's floor.
+// From revision 26, the DDT saving only for a purchase reachable before its round with the expected CHIMPS income, and camo and
+// Lead capacity answers due at moab_short's short round kept under its binding and saving (policy-v4.mjs ddtReach,
+// capacitySame; as btd6-jev-v6 revision 22); ddtReach: false and capacitySame: false give revision 25's floor.
 export function playbookGameV5(context = () => ({}), {playbook, tieMargin = TIE_MARGIN} = {}) {
  if (!playbook) throw Error(`Policy ${PLAYBOOK_POLICY_V5} needs a playbook.`);
  // The runner's lead is a strategist's answer time; a playbook has none, so threat answers get a fixed lead.
@@ -116,7 +140,7 @@ export function playbookGameV5(context = () => ({}), {playbook, tieMargin = TIE_
   isForced: (state, candidates) => candidates.length === 1 && FORCED_KINDS.includes(candidates[0].details?.kind),
   plan: (state, candidates) => state.in_game && !state.popup && !state.match?.result ? resolvePlaybook(playbook, state, candidates, facts()) : null,
   planInForce: plan => plan.record,
-  rules: (state, candidates) => floorRulesV4(state, candidates, context(), {threatShort: true, threatKinds: THREAT_KINDS_V4, threatOptions: THREAT_BURST_AHEAD, earlyShort: true, moabBinding: true, moabSaving: true, moabCapacity: true, ddtGapShare: DDT_GAP_SHARE}),
+  rules: (state, candidates) => floorRulesV4(state, candidates, context(), {threatShort: true, threatKinds: THREAT_KINDS_V4, threatOptions: THREAT_OPTIONS_R21, earlyShort: true, moabBinding: true, moabSaving: true, moabCapacity: false, ddtGapShare: 0, moabNearest: true, ddtSaveBest: true, capacityNearer: true, ddtReach: true, capacitySame: true}),
   constrain: (state, candidates, plan, status, {floor = null, all = null} = {}) => constrainV1(state, candidates, plan, facts(), {floor, all, idleCash: true, towerCap: true}),
   group: (state, candidates) => { const c = context(); return groupOptionsV4(state, candidates, {catalog: c.catalog ?? [], paths: c.paths ?? [], pressure: c.pressure ?? null}); },
   question: (state, candidates, plan, status, {stage} = {}) => {

@@ -96,14 +96,55 @@
 //    losses leaked camo regrowing Ceramics first, and four matches saved for a $16,200 Dart 5-0-2 credited with about 3 damage per
 //    second (match 2: 40.9 to 43.8 against 99.3 needed). Rounds without DDTs, and so Hard Standard, are unchanged.
 //    moabCapacity: false and ddtGapShare: 0 give revision 18.
+//  - revision 20: the DDT check's capacity and need together (moab.mjs, both set by the session). (1) The DDT-capable figure
+//    counts support effects (setDdtSupport): Village MIB and Radar Scanner coverage and camo removers upstream such as Shimmer.
+//    (2) In rounds with DDTs the need is deadline-based (setDdtNeed): for every interval from one MOAB-class bloon's spawn to
+//    another's deadline, the health due inside it over its length, with the DDT part against the DDT-capable figure; the
+//    toughest interval sets the need. Measured DDT damage was 3.7 times today's figure at the median (37 CHIMPS DDT records
+//    since 2026-10-01T20-00) and 1.9 times the support figure; the per-bloon need asked the same 99.3 for round 95 (30 camo DDTs
+//    over 20 s with 50 Fortified MOABs) as for round 90 (3 DDTs). Rounds without DDTs, and so Hard Standard, keep the figure and the need.
+//    (3) With one life the binding and the DDT saving target the nearest due round with a ratio below 0.5, not the weakest
+//    (policy-v4.mjs moabNearest): series 1k match 4 (revision 19) saved at rounds 89 to 92 for $34,560 upgrades aimed at rounds
+//    99 and 100 and lost at round 93 with $85.
+//    (4) The DDT saving targets the pool purchase with the most DDT gain per dollar for its round, ties to the cheaper
+//    (policy-v4.mjs ddtSaveBest): the cheapest adders were a $595 Alchemist (gain 0.1 to 0.4) and the $16,200 Dart 5-0-2 (gain
+//    2 to 3), while $2,400 Sniper upgrades added about 21.
+//    (5) Revision 19's two options are off again (moabCapacity: false, ddtGapShare: 0, as revision 18): in series 1k, of the
+//    matches that reached round 80, revision 18 reached rounds 95, 93 and 95 and revision 19 rounds 93 and 90. They stay
+//    switchable and independent of (1) to (4).
+//    setDdtSupport(false), setDdtNeed(false), moabNearest: false and ddtSaveBest: false give revision 18; with moabCapacity: true and
+//    ddtGapShare: DDT_GAP_SHARE as well, revision 19.
+//  - revision 21: threat_short's camo_capacity on the camo rate (threat.mjs camoRate, THREAT_OPTIONS_R21): due when the
+//    camo-capable towers' pops per second against the camo RBE per second over the camo spawn stretch plus 8 s, times the lives
+//    margin, is below 1.0, instead of the camo margin; camo answers ranked by the rate ratio they add per dollar. Look-ahead and
+//    binding unchanged; graded speed's +camo keeps the camo margin. Series 1k lost at rounds 33, 37 and 78 to camo with no camo
+//    rule firing; below 1.0 the rate caught 29 of the 35 CHIMPS camo rounds that lost lives, the camo margin 18 (camo-replay.mjs
+//    --models), and the losses at rounds 37 and 78 had margins of 2.28 and 1.29 and rates of 0.42 and 0.12. Applies on Hard
+//    Standard and in zero-leak mode too. With one life, a camo_capacity or lead_capacity round before moab_short's short round
+//    isn't set aside by moab_short (policy-v4.mjs capacityNearer): its binding stands and moab_short neither binds nor saves
+//    over it; in the replay the rate's camo_capacity was set aside at round 36 (round 40 in view) before the round-37 loss and
+//    at rounds 76 and 77 (round 80) before the round-78 loss. With one life camo_capacity binds, and takes precedence over
+//    moab_short, only when its best affordable answer adds at least 5% of the gap to 1.0 (threat.mjs CAMO_BIND_GAP_SHARE,
+//    camoBindShare; otherwise it only orders its answers): before the round-78 loss the answers added about 0.002 each against a
+//    gap of 0.88. threatOptions: THREAT_BURST_AHEAD and capacityNearer: false give revision 20.
+//  - revision 22: (1) The DDT saving saves only for a pool purchase it can reach before its round (policy-v4.mjs ddtReach): its
+//    cost is at most the cash plus the expected income of the rounds that complete before that round starts (income.mjs, the
+//    median CHIMPS cash income per round measured from the logs, data/income-chimps.json); among those, the most gain per
+//    dollar, ties to the cheaper. With none reachable it doesn't save, and moab_short orders as between ratios 0.5 and 1.
+//    Series 1l matches 4 and 8 and series 1k match 4 saved for $23,220 to $34,560 upgrades with cash peaking at $7,000 to
+//    $17,500, and lost at round 93. (2) With one life, a camo_capacity (past the 5% bar) or lead_capacity round that is the
+//    same as moab_short's short round keeps its answers under moab_short's binding and saving, after the check answers and
+//    before the MOAB adders or the pass options (policy-v4.mjs capacitySame, threat.mjs capacityAt); revision 21's nearer
+//    round still goes first. Series 1l matches 4 and 8 lost at round 93 to camo regrowing Ceramics while camo_capacity for
+//    round 93 was deferred to the DDT saving. ddtReach: false and capacitySame: false give revision 21.
 // The question and grouping are v4's.
 import {floorRulesV4, groupOptionsV4, jevQuestionV4, MOAB_BIND_RATIO, DDT_GAP_SHARE} from './policy-v4.mjs';
-import {THREAT_KINDS_V4, THREAT_BURST_AHEAD} from './threat.mjs';
+import {THREAT_KINDS_V4, THREAT_OPTIONS_R21} from './threat.mjs';
 
 export const JEV_POLICY_V6 = 'btd6-jev-v6';
 export const TOWER_CAP = 12;
 // The policy's code revision, recorded in run_start (policy_revision).
-export const V6_REVISION = 19;
+export const V6_REVISION = 22;
 // v4 rules whose removal of "Wait" lifts the tower cap for that decision.
 export const SURVIVAL_RULES = ['leak_pressure', 'moab_short', 'no_start_short'];
 
@@ -227,11 +268,11 @@ function capBinding(state, kept, floorRules, capped) {
 }
 
 // v4's rules, then the tower cap. context: {catalog, paths, leaks, pressure} as for v4.
-// moabCapacity: false and ddtGapShare: 0 give revision 18's rules; threatOptions: {...THREAT_BURST_AHEAD, leadAt: LEAD_CAPACITY_AT_R17} gives revision 17's rules;
+// ddtReach: false and capacitySame: false give revision 21's rules; threatOptions: THREAT_BURST_AHEAD with capacityNearer: false (and those) gives revision 20's rules; moabNearest: false and ddtSaveBest: false (with setDdtSupport(false) and setDdtNeed(false)) give revision 18's rules, and with moabCapacity: true and ddtGapShare: DDT_GAP_SHARE revision 19's; threatOptions: {...THREAT_BURST_AHEAD, leadAt: LEAD_CAPACITY_AT_R17} gives revision 17's rules;
 // moabBindBelow: Infinity, moabSaving: false and threatOptions: {...THREAT_BURST_AHEAD, leadAt: LEAD_CAPACITY_AT_R12} (with
 // setMoabDdtLead(MOAB_LEAD_ROUNDS)) give revision 16's rules; moabBinding: false gives revision 15's rules; threatOptions.leadDdt: true gives revision 14's Lead RBE; burstStandAside: false gives revision 13's cap; bindUnderCap: false gives revision 10's cap; oneLife: false revision 9's (applyTowerCap); threatBinding: false gives revision 8's rules; earlyBinding: false revision 7's; earlyShort: false revision 6's; threatShort: false revision 1's; threatKinds: THREAT_KINDS revision 2's, THREAT_KINDS_V2 revisions 3 and 4's, THREAT_KINDS_V3 revisions 5 to 11's; threatOptions: {} revision 3's.
-export function floorRulesV6(state, candidates, context = {}, {cap = TOWER_CAP, threatShort = true, threatKinds = THREAT_KINDS_V4, threatOptions = THREAT_BURST_AHEAD, earlyShort = true, earlyBinding = true, threatBinding = true, oneLife = true, bindUnderCap = true, burstStandAside = true, moabBinding = true, moabBindBelow = MOAB_BIND_RATIO, moabSaving = true, moabCapacity = true, ddtGapShare = DDT_GAP_SHARE} = {}) {
- const base = floorRulesV4(state, candidates, context, {threatShort, threatKinds, threatOptions, earlyShort, earlyBinding, threatBinding, moabBinding, moabBindBelow, moabSaving, moabCapacity, ddtGapShare});
+export function floorRulesV6(state, candidates, context = {}, {cap = TOWER_CAP, threatShort = true, threatKinds = THREAT_KINDS_V4, threatOptions = THREAT_OPTIONS_R21, earlyShort = true, earlyBinding = true, threatBinding = true, oneLife = true, bindUnderCap = true, burstStandAside = true, moabBinding = true, moabBindBelow = MOAB_BIND_RATIO, moabSaving = true, moabCapacity = false, ddtGapShare = 0, moabNearest = true, ddtSaveBest = true, capacityNearer = true, ddtReach = true, capacitySame = true} = {}) {
+ const base = floorRulesV4(state, candidates, context, {threatShort, threatKinds, threatOptions, earlyShort, earlyBinding, threatBinding, moabBinding, moabBindBelow, moabSaving, moabCapacity, ddtGapShare, moabNearest, ddtSaveBest, capacityNearer, ddtReach, capacitySame});
  const rules = base.constraint?.rules ?? [];
  const capped = applyTowerCap(state, candidates, base.candidates, rules, context, {cap, oneLife, bindUnderCap, burstStandAside});
  if (!capped) return base;

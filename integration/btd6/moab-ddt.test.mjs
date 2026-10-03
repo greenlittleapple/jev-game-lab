@@ -5,7 +5,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {setDdtCheck, setMoabCalibration, setMoabDdtLead, moabDue, moabDdtLeadFor, MOAB_LEAD_ROUNDS, MOAB_DDT_LEAD_ROUNDS} from './moab.mjs';
-import {floorRulesV4, moabShort, MOAB_BIND_RATIO} from './policy-v4.mjs';
+import {floorRulesV4, moabShort, MOAB_BIND_RATIO, DDT_GAP_SHARE} from './policy-v4.mjs';
 import {floorRulesV6, TOWER_CAP} from './policy-v6.mjs';
 import {THREAT_KINDS_V4, THREAT_BURST_AHEAD, LEAD_CAPACITY_AT, LEAD_CAPACITY_AT_R12, LEAD_CAPACITY_AT_R17, threatShort, leadAtFor} from './threat.mjs';
 import {setPopsCalibration} from './estimate.mjs';
@@ -16,7 +16,9 @@ import {loadPlaybook} from './playbook-v5.mjs';
 const ids = list => list.map(c => c.id);
 const moabRule = r => r.constraint?.rules?.find(q => q.kind === 'moab_short');
 // Revision 18's options for the DDT binding and saving (revision 19, moab-ddt-save.test.mjs, changes both).
-const R18 = {moabCapacity: false, ddtGapShare: 0};
+const R18 = {moabCapacity: false, ddtGapShare: 0, moabNearest: false, ddtSaveBest: false, ddtReach: false, capacitySame: false};
+// Revision 19's rule options (revision 20 turns moabCapacity and ddtGapShare off and moabNearest on; these states also have a short MOAB round 87 below 0.5).
+const R19 = {moabCapacity: true, ddtGapShare: DDT_GAP_SHARE, moabNearest: false, ddtSaveBest: false, ddtReach: false, capacitySame: false};
 const R16 = {...R18, moabBindBelow: Infinity, moabSaving: false, threatOptions: {...THREAT_BURST_AHEAD, leadAt: LEAD_CAPACITY_AT_R12}};
 
 // Series 1h match 3, rounds 36 to 39 (moab-bind.test.mjs): round 40 at 0.18 to 0.24 under the factor 1.27.

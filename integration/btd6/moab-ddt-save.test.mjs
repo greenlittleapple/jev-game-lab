@@ -16,7 +16,9 @@ import {meadowPaths as paths} from './fixtures/index.mjs';
 const ids = list => list.map(c => c.id);
 const moabRule = r => r.constraint?.rules?.find(q => q.kind === 'moab_short');
 const threatRule = r => r.constraint?.rules?.find(q => q.kind === 'threat_short');
-const R18 = {moabCapacity: false, ddtGapShare: 0};
+const R18 = {moabCapacity: false, ddtGapShare: 0, moabNearest: false, ddtSaveBest: false, ddtReach: false, capacitySame: false};
+// Revision 19's rule options (revision 20 turns moabCapacity and ddtGapShare off and moabNearest on; these states also have a short MOAB round 87 below 0.5).
+const R19 = {moabCapacity: true, ddtGapShare: DDT_GAP_SHARE, moabNearest: false, ddtSaveBest: false, ddtReach: false, capacitySame: false};
 const settings = async (fn, {lead = MOAB_DDT_LEAD_ROUNDS} = {}) => {
  setDdtCheck(true); setMoabCalibration(1.27); setMoabDdtLead(lead);
  try { return await fn(); } finally { setDdtCheck(false); setMoabCalibration(1); setMoabDdtLead(MOAB_LEAD_ROUNDS); }
@@ -30,14 +32,14 @@ const pass = [{id: 'wait', details: {kind: 'wait'}}, {id: 'start_round', details
 
 test('constants and revisions', () => {
  assert.equal(DDT_GAP_SHARE, 0.25);
- assert.deepEqual([V6_REVISION, V5_REVISION, CLAUDE_V1_REVISION, claudeGameV1(() => ({})).revision], [19, 23, 22, 22]);
+ assert.deepEqual([V6_REVISION, V5_REVISION, CLAUDE_V1_REVISION, claudeGameV1(() => ({})).revision], [22, 26, 25, 25]);
 });
 
 test('binding on a DDT round keeps the capacity answers after the check answers and before the MOAB adders', () => settings(() => {
  const superMonkey = T('SuperMonkey', [2, 0, 0], 1), druid = T('Druid', [4, 0, 0], 4);
  const state = {in_game: true, round: {number: 87, index: 86}, cash: 3000, lives: 1, match: {end_round: 100}, towers: [superMonkey, druid]};
  const options = [pass[0], up(superMonkey, '3-0-0', 1000), up(druid, '5-0-0', 1500)];
- const neu = floorRulesV6(state, options, {paths: []}), old = floorRulesV6(state, options, {paths: []}, R18);
+ const neu = floorRulesV6(state, options, {paths: []}, R19), old = floorRulesV6(state, options, {paths: []}, R18);
  assert.deepEqual([moabRule(old).binding, ids(old.candidates), moabRule(old).kept_capacity], [true, ['upgrade:4:p1'], undefined]);
  // The Druid's upgrade adds camo capacity and MOAB damage; the Super Monkey's adds Lead capacity. Camo first, then Lead.
  assert.deepEqual([moabRule(neu).binding, moabRule(neu).round, ids(neu.candidates), moabRule(neu).kept_capacity], [true, 90, ['upgrade:4:p1', 'upgrade:1:p1'], 2]);
@@ -80,9 +82,9 @@ test('the DDT saving targets the cheapest purchase adding a quarter of the gap, 
  assert.deepEqual([short.round, short.dps, short.needs_dps], [90, 0, 99.3]);
  assert.ok(gains[0] > 0 && gains[0] < DDT_GAP_SHARE * gap && gains[1] >= DDT_GAP_SHARE * gap, `gains ${gains}, gap ${gap}`);
  const pool = [superUp, druid4, druid5];
- const old = floorRulesV6(s, savingOptions, {paths: [], pool}, R18), neu = floorRulesV6(s, savingOptions, {paths: [], pool});
+ const old = floorRulesV6(s, savingOptions, {paths: [], pool}, R18), neu = floorRulesV6(s, savingOptions, {paths: [], pool}, R19);
  // Revision 18 saves for the cheapest DDT-capable purchase, whatever it adds, and keeps only the pass options.
- assert.deepEqual([moabRule(old).saving, moabRule(old).for, moabRule(old).gap, ids(old.candidates)], [4500, 'upgrade:4:p1', undefined, ['wait', 'start_round']]);
+ assert.deepEqual([moabRule(old).saving, moabRule(old).for, moabRule(old).gap, ids(old.candidates)], [4500, 'upgrade:4:p1', 99.3, ['wait', 'start_round']]);
  // Revision 19 saves for the Druid's 5-0-0, and the Super Monkey's Lead capacity upgrade stays before the pass options.
  const rule = moabRule(neu);
  assert.deepEqual([rule.saving, rule.for, rule.gap, rule.gain, rule.kept_capacity], [20000, 'upgrade:4:p1:5', 99.3, gains[1], 1]);
@@ -92,7 +94,7 @@ test('the DDT saving targets the cheapest purchase adding a quarter of the gap, 
 
 test('no saving when no purchase in the pool adds a quarter of the gap', () => settings(() => {
  const s = savingState(), pool = [superUp, druid4];
- const old = floorRulesV6(s, savingOptions, {paths: [], pool}, R18), neu = floorRulesV6(s, savingOptions, {paths: [], pool});
+ const old = floorRulesV6(s, savingOptions, {paths: [], pool}, R18), neu = floorRulesV6(s, savingOptions, {paths: [], pool}, R19);
  assert.equal(moabRule(old).saving, 4500);
  // No saving and no affordable MOAB adder: moab_short doesn't fire, and threat_short's own one-life binding applies.
  assert.equal(moabRule(neu), undefined);
@@ -100,10 +102,10 @@ test('no saving when no purchase in the pool adds a quarter of the gap', () => s
  assert.equal(threatRule(neu).binding, true);
 }));
 
-test('the v5 floor saves for the quarter-gap target too', () => settings(async () => {
+test('the v5 floor: revision 24 targets the nearest round below 0.5 (87, no DDTs, so no DDT saving)', () => settings(async () => {
  const playbook = await loadPlaybook(new URL('./playbooks/monkey-meadow-hard-standard.json', import.meta.url));
  const s = savingState(), r = playbookGameV5(() => ({paths: [], pool: [superUp, druid4, druid5]}), {playbook}).rules(s, savingOptions);
- assert.deepEqual([moabRule(r)?.saving, moabRule(r)?.for, moabRule(r)?.kept_capacity], [20000, 'upgrade:4:p1:5', 1]);
+ assert.deepEqual([moabRule(r)?.round, moabRule(r)?.weakest, moabRule(r)?.saving], [87, 90, undefined]);
 }));
 
 // MOAB-class rounds without DDTs are unchanged: every decision of the round-40 fixture (moab-bind.test.mjs).
@@ -135,7 +137,7 @@ test('series 1j match 2: revision 18 rebuilds the logged saving; revision 19 doe
  const logged = g.decisions.filter(d => d.moab_short?.saving != null);
  assert.equal(logged.length, 29);
  for (const d of logged) {
-  const old = gRun(d, R18), neu = gRun(d);
+  const old = gRun(d, R18), neu = gRun(d, R19);
   assert.deepEqual([moabRule(old).saving, moabRule(old).for, ids(old.candidates)], [16200, 'upgrade:415:p1', ['wait']], `round ${d.round}, cash ${d.cash}`);
   assert.equal(moabRule(neu)?.saving, undefined, `round ${d.round}, cash ${d.cash}`);
  }
@@ -146,8 +148,14 @@ test('series 1j match 2: revision 18 rebuilds the logged saving; revision 19 doe
  const late = g.decisions.filter(d => d.round >= 92 && d.moab_short?.saving != null);
  assert.ok(late.length >= 8);
  for (const d of late) {
-  const old = gRun(d, R18), neu = gRun(d);
+  const old = gRun(d, R18), neu = gRun(d, R19);
   assert.deepEqual([threatRule(old).deferred_to, ids(old.candidates)], ['moab_short', ['wait']]);
   assert.deepEqual([threatRule(neu).missing, ids(neu.candidates)], [['camo_capacity'], ['upgrade:13562:p2']]);
  }
+}));
+
+test('revision 20 sits on revision 18\'s options: without moabNearest and ddtSaveBest (and the session\'s figure and need) it gives revision 18', () => settings(() => {
+ for (const d of g.decisions.filter((d, i) => i % 5 === 0)) assert.deepEqual(gRun(d, {moabNearest: false, ddtSaveBest: false, ddtReach: false, capacitySame: false}), gRun(d, R18), `round ${d.round}, cash ${d.cash}`);
+ const s = savingState(), r = floorRulesV6(s, savingOptions, {paths: [], pool: [superUp, druid4, druid5]}, {moabNearest: false, ddtSaveBest: false, ddtReach: false, capacitySame: false});
+ assert.equal(moabRule(r)?.saving, 4500, 'the cheapest DDT-capable purchase, as revision 18');
 }));

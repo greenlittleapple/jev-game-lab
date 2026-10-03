@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1108" height="2452" viewBox="0 0 1108 2452" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
-<title id="t">How far each version got</title><desc id="d">v3: best round 80; v4: best round 80; v4 graded: best round 42; v4 (btd6-open-v2): best round 51; Claude v1 adaptive: best round 80; Claude v1 r4 (btd6-open-v3) graded: best round 80; Claude v1 r6 (btd6-open-v3) graded: best round 80; Claude v1 r7 (btd6-open-v3) graded: best round 80; Playbook v5 graded: best round 56; Playbook v5 r2 (btd6-open-v2) graded: best round 78; Playbook v5 r3 (btd6-open-v2) graded: best round 51; Playbook v5 r4 (btd6-open-v3) graded: best round 76; Playbook v5 r5 (btd6-open-v3) graded: best round 80; Playbook v5 r6 (btd6-open-v3) graded: best round 80; Playbook v5 r7 (btd6-open-v3) graded: best round 80; Playbook v5 r8 (btd6-open-v3) graded: best round 80; Playbook v5 r9 (btd6-open-v3) graded: best round 80; Playbook v5 r23 (btd6-open-v3) graded, zero-leak: best round 80; v6 (btd6-open-v2) graded: best round 78; v6 (btd6-open-v3) graded: best round 80; v6 r2 (btd6-open-v3) graded: best round 80; v6 r3 (btd6-open-v3) graded: best round 80; v6 r4 (btd6-open-v3) graded: best round 80; v6 r5 (btd6-open-v3) graded: best round 80; v6 r14 (btd6-open-v3) graded: best round 80; v6 r18 (btd6-open-v3) graded: best round 80; v6 r18 (btd6-open-v3) graded, zero-leak: best round 80</desc>
-<rect width="1108" height="2452" rx="12" fill="#fcfcfb"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1108" height="2522" viewBox="0 0 1108 2522" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+<title id="t">How far each version got</title><desc id="d">v3: best round 80; v4: best round 80; v4 graded: best round 42; v4 (btd6-open-v2): best round 51; Claude v1 adaptive: best round 80; Claude v1 r4 (btd6-open-v3) graded: best round 80; Claude v1 r6 (btd6-open-v3) graded: best round 80; Claude v1 r7 (btd6-open-v3) graded: best round 80; Claude v1 r22 (btd6-open-v3) graded, zero-leak: best round 80; Playbook v5 graded: best round 56; Playbook v5 r2 (btd6-open-v2) graded: best round 78; Playbook v5 r3 (btd6-open-v2) graded: best round 51; Playbook v5 r4 (btd6-open-v3) graded: best round 76; Playbook v5 r5 (btd6-open-v3) graded: best round 80; Playbook v5 r6 (btd6-open-v3) graded: best round 80; Playbook v5 r7 (btd6-open-v3) graded: best round 80; Playbook v5 r8 (btd6-open-v3) graded: best round 80; Playbook v5 r9 (btd6-open-v3) graded: best round 80; Playbook v5 r23 (btd6-open-v3) graded, zero-leak: best round 80; v6 (btd6-open-v2) graded: best round 78; v6 (btd6-open-v3) graded: best round 80; v6 r2 (btd6-open-v3) graded: best round 80; v6 r3 (btd6-open-v3) graded: best round 80; v6 r4 (btd6-open-v3) graded: best round 80; v6 r5 (btd6-open-v3) graded: best round 80; v6 r14 (btd6-open-v3) graded: best round 80; v6 r18 (btd6-open-v3) graded: best round 80; v6 r18 (btd6-open-v3) graded, zero-leak: best round 80</desc>
+<rect width="1108" height="2522" rx="12" fill="#fcfcfb"/>
 <text x="24" y="40" font-size="20" font-weight="600" fill="#0b0b0b" text-anchor="start">How far each version got</text>
 <text x="24" y="64" font-size="14" font-weight="400" fill="#52514e" text-anchor="start">Bloons TD 6, Monkey Meadow, Hard Standard (rounds 3 to 80, 100 lives); ruleset btd6-open-v1 unless the row names another. Each dot is one</text>
 <text x="24" y="84" font-size="14" font-weight="400" fill="#52514e" text-anchor="start">run, green if it won; the bar reaches the best run.</text>
@@ -13,11 +13,11 @@
 <text x="800" y="157" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 60</text>
 <text x="870" y="140" font-size="13" font-weight="600" fill="#52514e" text-anchor="middle">ZOMG</text>
 <text x="870" y="157" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">round 80</text>
-<line x1="590" y1="170" x2="590" y2="2330" stroke="#c3c2b7" stroke-width="1"/>
-<line x1="674" y1="170" x2="674" y2="2330" stroke="#e1e0d9" stroke-width="1"/>
-<line x1="730" y1="170" x2="730" y2="2330" stroke="#e1e0d9" stroke-width="1"/>
-<line x1="800" y1="170" x2="800" y2="2330" stroke="#e1e0d9" stroke-width="1"/>
-<line x1="870" y1="170" x2="870" y2="2330" stroke="#e1e0d9" stroke-width="1"/>
+<line x1="590" y1="170" x2="590" y2="2400" stroke="#c3c2b7" stroke-width="1"/>
+<line x1="674" y1="170" x2="674" y2="2400" stroke="#e1e0d9" stroke-width="1"/>
+<line x1="730" y1="170" x2="730" y2="2400" stroke="#e1e0d9" stroke-width="1"/>
+<line x1="800" y1="170" x2="800" y2="2400" stroke="#e1e0d9" stroke-width="1"/>
+<line x1="870" y1="170" x2="870" y2="2400" stroke="#e1e0d9" stroke-width="1"/>
 <circle cx="30" cy="191" r="6" fill="#2a78d6"/>
 <text x="44" y="196" font-size="14" font-weight="600" fill="#0b0b0b" text-anchor="start">Jev only</text>
 <text x="24" y="226" font-size="15"><tspan font-weight="600" fill="#0b0b0b">v3</tspan><tspan fill="#898781" font-size="13"> · 3 runs</tspan></text>
@@ -265,9 +265,19 @@
 <path d="M590,2295 H867 A3,3 0 0 1 870,2298 V2298 A3,3 0 0 1 867,2301 H590 Z" fill="#8a4fd1" fill-opacity="0.35"/>
 <circle cx="870" cy="2298" r="6.5" fill="#0ca30c" stroke="#fcfcfb" stroke-width="2"/>
 <text x="882" y="2303" font-size="13" font-weight="600"><tspan fill="#0b0b0b">80</tspan><tspan fill="#006300"> ✓ won</tspan><tspan fill="#898781" font-weight="400"> · 100 lives left</tspan></text>
-<text x="24" y="2356" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">Not listed: four records from a match-ID race at load (bridge 0.3.6, fixed in 0.3.7) and four starts a store ad blocked (fixed in 0.3.10); the runner made</text>
-<text x="24" y="2374" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">no move in them.</text>
-<text x="24" y="2392" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">Every run listed up to 2026-09-30 19:24 UTC used the first MOAB requirement, which asked for about 2.9 times the damage needed to kill each MOAB-class</text>
-<text x="24" y="2410" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">bloon before the exit; it fired in 72 rounds of the logs against 22 with the current requirement (afb132a, 4f0d9c0; docs/PLAN.md, "MOAB requirement</text>
-<text x="24" y="2428" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">replay").</text>
+<text x="24" y="2342" font-size="15"><tspan font-weight="600" fill="#0b0b0b">Claude v1 r22 (btd6-open-v3) graded, zero-leak</tspan><tspan fill="#898781" font-size="13"> · 5 runs · 4 of 5 won, median round 80</tspan></text>
+<text x="24" y="2362" font-size="13.5" font-weight="400" fill="#52514e" text-anchor="start">Claude v1 revision 22 under ruleset btd6-open-v3 with graded game speed (--speed graded)</text>
+<text x="24" y="2380" font-size="13.5" font-weight="400" fill="#52514e" text-anchor="start">in zero-leak mode (--zero-leak: played as if with 1 life)</text>
+<path d="M590,2356 H867 A3,3 0 0 1 870,2359 V2359 A3,3 0 0 1 867,2362 H590 Z" fill="#8a4fd1" fill-opacity="0.35"/>
+<circle cx="856" cy="2359" r="4.5" fill="#8a4fd1" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="870" cy="2348.5" r="6.5" fill="#0ca30c" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="870" cy="2355.5" r="6.5" fill="#0ca30c" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="870" cy="2362.5" r="6.5" fill="#0ca30c" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="870" cy="2369.5" r="6.5" fill="#0ca30c" stroke="#fcfcfb" stroke-width="2"/>
+<text x="882" y="2364" font-size="13" font-weight="600"><tspan fill="#0b0b0b">80</tspan><tspan fill="#006300"> ✓ won</tspan><tspan fill="#898781" font-weight="400"> · 100 lives left</tspan></text>
+<text x="24" y="2426" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">Not listed: four records from a match-ID race at load (bridge 0.3.6, fixed in 0.3.7) and four starts a store ad blocked (fixed in 0.3.10); the runner made</text>
+<text x="24" y="2444" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">no move in them.</text>
+<text x="24" y="2462" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">Every run listed up to 2026-09-30 19:24 UTC used the first MOAB requirement, which asked for about 2.9 times the damage needed to kill each MOAB-class</text>
+<text x="24" y="2480" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">bloon before the exit; it fired in 72 rounds of the logs against 22 with the current requirement (afb132a, 4f0d9c0; docs/PLAN.md, "MOAB requirement</text>
+<text x="24" y="2498" font-size="12.5" font-weight="400" fill="#898781" text-anchor="start">replay").</text>
 </svg>

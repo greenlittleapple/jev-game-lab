@@ -196,7 +196,7 @@ test('replay of the v3 round-40 loss: an opening plan for MOAB damage by round 3
   const offered = Object.keys(questions.at(-1).questions.move.criteria);
   assert.ok(offered.every(id => ['wait', 'upgrade:1', 'upgrade:6', 'upgrade:1:p2', 'upgrade:6:p2'].includes(id)), `round ${round}: only waiting or the Artillery Batteries (${offered})`);
   assert.equal(r.choice.id, 'upgrade:1:p2');
-  assert.deepEqual(r.planInForce, {request_id: 'r1', reason: 'match_start', round_at: 3, adopted_at: null, revision: 22});
+  assert.deepEqual(r.planInForce, {request_id: 'r1', reason: 'match_start', round_at: 3, adopted_at: null, revision: 25});
   assert.ok(r.constraint.rules.some(x => x.kind === 'off_plan'));
   assert.deepEqual(questions.at(-1).state.plan, {summary: 'Mortars carry MOAB damage by round 38.', next: ['MortarMonkey 0-4-2 x2 by round 38'], hold_cash: 1100});
  }
@@ -294,8 +294,8 @@ test('dry run with a scripted strategist: an invalid answer, a late one, plans l
  const decisions = events.filter(e => e.kind === 'decision' && e.decisionSource !== 'forced');
  assert.ok(decisions.every(e => 'plan' in e), 'each decision names the plan in force');
  assert.ok(decisions.some(e => e.plan?.request_id === adopted.at(-1).request_id));
- assert.equal(events.find(e => e.kind === 'run_start').policy_revision, 22, 'revision 22: DDT binding and saving keep capacity answers');
- assert.ok(decisions.filter(e => e.plan).every(e => e.plan.revision === 22));
+ assert.equal(events.find(e => e.kind === 'run_start').policy_revision, 25, 'revision 25: reachable DDT saving targets and same-round capacity answers');
+ assert.ok(decisions.filter(e => e.plan).every(e => e.plan.revision === 25));
  assert.ok(decisions.some(e => e.constraint?.rules?.some(r => r.kind === 'off_plan')));
  const [entry] = await read(series.file);
  assert.deepEqual([entry.policy, entry.mode, entry.label], ['btd6-claude-v1', 'strategist', 'btd6-claude-v1']);

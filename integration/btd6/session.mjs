@@ -35,7 +35,7 @@ import {TRIGGERS_V1} from './triggers-v1.mjs';
 import {DEFAULT_SPEED_MODE, GRADE_AT_CAMO, isEmergency, MIN_SPEED, MIN_SPEED_FLOORS, adaptiveSpeed, buyingNow, dangerSignals, defenceMargins, gradedSpeed, parseSpeedMode, speedClock, speedCommand, speedKeeper,
  speedMode, speedTriggers, withBetweenRounds} from './speed.mjs';
 import {moabShort} from './policy-v4.mjs';
-import {moabCalibration, setMoabCalibration, setDdtCheck, ddtCheckFor, setMoabDdtLead, moabDdtLeadFor, MOAB_LEAD_ROUNDS} from './moab.mjs';
+import {moabCalibration, setMoabCalibration, setDdtCheck, ddtCheckFor, setMoabDdtLead, moabDdtLeadFor, setDdtSupport, ddtSupportFor, setDdtNeed, ddtNeedFor, MOAB_LEAD_ROUNDS} from './moab.mjs';
 import {moabMeter} from './moab-calibration.mjs';
 import {popsTracker} from './pops.mjs';
 import {popsCalibration as currentPops, setPopsCalibration, setEarlyMargin, earlyMarginFor} from './estimate.mjs';
@@ -246,6 +246,10 @@ export async function runSession({bridge, ask, log, series = null, session, setu
  setDdtCheck(ddtCheckFor(policy));
  // moab_short's 10-round lead for DDT rounds (moab.mjs setMoabDdtLead) for v6, v5 and claude-v1 at their current revisions.
  setMoabDdtLead(moabDdtLeadFor(policy));
+ // The support-effects DDT figure and the deadline-based need in DDT rounds (moab.mjs setDdtSupport, setDdtNeed) for v6,
+ // v5 and claude-v1 at their current revisions.
+ setDdtSupport(ddtSupportFor(policy));
+ setDdtNeed(ddtNeedFor(policy));
  const popsMeasures = [];
  let meter = null, popsTrack = null;
  const logPops = async records => { for (const r of records) { if (r.kind === 'pops_round') popsMeasures.push(r); await log.append({match_id: matchId, ...r}); } };

@@ -94,7 +94,7 @@ test('conditions: round range, MOAB damage short, lives lost, no free spot, cash
 test('entry selection: the phase for the round, then the branches whose conditions hold, recorded per decision', () => {
  const darts = [tower(1, 'DartMonkey', 'S01', [0, 2, 2]), tower(2, 'DartMonkey', 'S02', [0, 2, 2])];
  const opening = resolvePlaybook(playbook, at(10, {towers: darts}), [], context());
- assert.deepEqual(opening.record, {playbook: playbook.id, version: '1.1.0', revision: 23, phase: 'opening', branches: [], due: ['hero'], hold: null});
+ assert.deepEqual(opening.record, {playbook: playbook.id, version: '1.1.0', revision: 26, phase: 'opening', branches: [], due: ['hero'], hold: null});
 
  // Round 36 with no MOAB damage: moab_first puts the Bomb Shooter first (priority 0, due now).
  const r36 = at(36, {towers: darts, cash: 500});
@@ -204,10 +204,10 @@ test('dry run: the playbook in force per decision, near ties broken, and places 
  const events = await read(file.file);
  assert.deepEqual(events.find(e => e.kind === 'session_start').playbook, {id: playbook.id, version: '1.1.0'});
  assert.deepEqual(events.find(e => e.kind === 'run_start').playbook, {id: playbook.id, version: '1.1.0'});
- assert.equal(events.find(e => e.kind === 'run_start').policy_revision, 23, 'revision 23: DDT binding and saving keep capacity answers');
+ assert.equal(events.find(e => e.kind === 'run_start').policy_revision, 26, 'revision 26: reachable DDT saving targets and same-round capacity answers');
  const decisions = events.filter(e => e.kind === 'decision' && e.decisionSource !== 'forced');
  assert.ok(decisions.length > 10);
- assert.ok(decisions.every(e => e.plan?.playbook === playbook.id && e.plan.version === '1.1.0' && e.plan.revision === 23 && ['opening', 'first_moab'].includes(e.plan.phase)), 'each decision names the playbook entries in force');
+ assert.ok(decisions.every(e => e.plan?.playbook === playbook.id && e.plan.version === '1.1.0' && e.plan.revision === 26 && ['opening', 'first_moab'].includes(e.plan.phase)), 'each decision names the playbook entries in force');
  assert.ok(decisions.some(e => e.constraint?.rules?.some(r => r.kind === 'off_plan')));
  assert.ok(decisions.some(e => e.tie_break?.some(b => b.switched)), 'a near tie went to the playbook\'s option');
  assert.equal(usage.requests > 0, true);

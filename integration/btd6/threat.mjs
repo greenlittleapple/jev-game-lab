@@ -58,7 +58,17 @@
 // log 2026-10-01T23-52-01) round 95's Lead RBE was mostly its 30 camo DDTs, and the rule saved for a $405 Bomb Shooter,
 // which pops Lead but can't damage a DDT (Black), at about 70 decisions in rounds 92 to 95 (fixtures/lead-capacity-r95.json).
 // DDTs are left to the MOAB check's DDT-capable figure (moab.mjs, from v6 revision 13).
-import {roundCheck, camoCheck, leadCheck} from './estimate.mjs';
+// camo_capacity on the camo rate (camoRate, Model B of camo.mjs; from btd6-jev-v6 revision 21, btd6-playbook-v5 revision 25
+// and btd6-claude-v1 revision 24): due when the camo-capable towers' pops per second (can_pop over roundSeconds) against the
+// camo RBE per second over the camo spawn stretch plus DWELL_SECONDS (data/camo-timing.json; needs, with the lives margin, over
+// camo.mjs camoWindow) is below CAMO_CAPACITY_AT, instead of the camo margin; camo_gain is the rate ratio a purchase adds. The
+// look-ahead, the order and the binding with one life are unchanged. The rate ratio is the camo margin times the round's
+// window over its seconds, so within one round the answers keep their order; they change where another round becomes due.
+// The camo model replay (camo-replay.mjs --models, 139 logs since 2026-09-30T10-00): below 1.0 the camo margin flagged 25 CHIMPS
+// camo rounds and caught 18 of the 35 that lost lives, the rate 93 and 29; the camo losses at rounds 37 and 78 had margins of
+// 2.28 and 1.29 and rates of 0.42 and 0.12. Graded speed's +camo keeps the camo margin. camoRate: false gives v6 revision 20.
+import {roundCheck, camoCheck, leadCheck, roundSeconds} from './estimate.mjs';
+import {camoWindow, camoTimingOf} from './camo.mjs';
 import {after, withReach} from './policy-v3.mjs';
 import {buildCandidates} from './candidates.mjs';
 
@@ -73,6 +83,12 @@ export const THREAT_KINDS_V3 = ['lead', 'camo', 'camo_lead', 'camo_capacity', 'b
 export const THREAT_KINDS_V4 = ['lead', 'camo', 'camo_lead', 'camo_capacity', 'lead_capacity', 'burst'];
 // camo_capacity is due below this camo margin (camoCheck ratio).
 export const CAMO_CAPACITY_AT = 1.0;
+// The camo rate's scale for a round (camoRate): the camo window over the round's seconds, so the rate ratio is the camo margin
+// times it (camo.mjs modelB); null without camo timing, where the camo margin stands.
+export const camoRateScale = round => { const w = camoWindow(camoTimingOf(round)), s = roundSeconds(round); return w > 0 && s > 0 ? w / s : null; };
+// The revisions of each policy with camoRate (from CAMO_RATE_FROM); camoRateFor: whether a run of that policy and revision used it.
+export const CAMO_RATE_FROM = {'btd6-jev-v6': 21, 'btd6-playbook-v5': 25, 'btd6-claude-v1': 24};
+export const camoRateFor = (policy, revision = 0) => Object.hasOwn(CAMO_RATE_FROM, policy) && (revision ?? 0) >= CAMO_RATE_FROM[policy];
 // lead_capacity is due below this Lead margin (leadCheck ratio): 1.0, as in btd6-jev-v6 revisions 12 to 16, again from
 // btd6-jev-v6 revision 18, btd6-playbook-v5 revision 22 and btd6-claude-v1 revision 21; LEAD_CAPACITY_AT_R17 (0.5) in v6
 // revision 17, v5 revision 21 and claude-v1 revision 20 (threatOptions.leadAt). Revision 17 chose 0.5 from the Lead-margin
@@ -86,6 +102,15 @@ export const LEAD_CAPACITY_AT_R17 = 0.5;
 // applyThreatShort and floorRulesV4.
 export const THREAT_BURST_ROUNDS = THREAT_LEAD_ROUNDS;
 export const THREAT_BURST_AHEAD = {burstLead: THREAT_BURST_ROUNDS, burstGain: true};
+// camo_capacity's binding on the camo rate needs an answer that closes this share of the gap (camoBindShare): the best affordable
+// answer's camo_gain (rate gain) must be at least CAMO_BIND_GAP_SHARE x (CAMO_CAPACITY_AT - the rate). Before the round-78 camo loss
+// of series 1k match 3 the answers raised the rate by about 0.002 each against a gap of 0.88, and in the revision 21 replay camo
+// binding in CHIMPS rounds 61 to 80 rose from 0 to 1,001 of 4,033 decisions (binding that often hurt revision 16).
+export const CAMO_BIND_GAP_SHARE = 0.05;
+// The threat options from btd6-jev-v6 revision 21, btd6-playbook-v5 revision 25 and btd6-claude-v1 revision 24: THREAT_BURST_AHEAD
+// with camo_capacity on the camo rate and its gap guard (camoBindShare: 0 turns the guard off). THREAT_BURST_AHEAD gives the
+// revisions before.
+export const THREAT_OPTIONS_R21 = {...THREAT_BURST_AHEAD, camoRate: true, camoBindShare: CAMO_BIND_GAP_SHARE};
 // Kinds a purchase adds by raising a rate rather than by passing a check.
 const RATE_KINDS = ['camo_capacity', 'lead_capacity', 'burst'];
 // The first revision of each policy whose Lead RBE leaves DDTs out; leadDdtFor: whether a run of that policy and revision
@@ -110,11 +135,13 @@ const spends = c => c.details?.kind === 'place' || c.details?.kind === 'upgrade'
 // that window's needs.
 // leadDdt: count DDTs in lead_capacity's Lead RBE (v6 revisions 12 to 14); the result carries it, not enumerable, for threatEffect.
 // leadAt: lead_capacity's threshold (LEAD_CAPACITY_AT, as in v6 revisions 12 to 16; LEAD_CAPACITY_AT_R17 gives v6 revision 17); the result carries
-// it, not enumerable, for the record.
-export function threatShort(state, paths = [], {lead = THREAT_LEAD_ROUNDS, kinds = THREAT_KINDS, burstLead = lead, leadDdt = false, leadAt = LEAD_CAPACITY_AT} = {}) {
+// it, not enumerable, for the record. camoRate: camo_capacity on the camo rate (camoRateScale); the result then carries
+// camoScale and camoMargin (the camo margin), not enumerable, for threatEffect and the record.
+export function threatShort(state, paths = [], {lead = THREAT_LEAD_ROUNDS, kinds = THREAT_KINDS, burstLead = lead, leadDdt = false, leadAt = LEAD_CAPACITY_AT, camoRate = false} = {}) {
  const now = state.round.number, ahead = k => now + (k === 'burst' ? burstLead : lead);
  const last = Math.min(state.match?.end_round ?? 100, Math.max(...kinds.map(ahead)));
  const rounds = {}, ratios = {}, canPop = {}, needs = {};
+ let camo = null;
  for (let r = now; r <= last; r++) {
   const c = roundCheck(state.towers, r, {lives: state.lives, paths, useReach: true});
   if (!c) continue;
@@ -124,7 +151,12 @@ export function threatShort(state, paths = [], {lead = THREAT_LEAD_ROUNDS, kinds
   }
   if (kinds.includes('camo_capacity') && r <= ahead('camo_capacity') && !('camo_capacity' in rounds)) {
    const m = camoCheck(state.towers, r, {lives: state.lives, paths});
-   if (m && m.ratio < CAMO_CAPACITY_AT) { rounds.camo_capacity = r; ratios.camo_capacity = m.ratio; canPop.camo_capacity = m.can_pop; needs.camo_capacity = m.needs; }
+   const scale = camoRate && m ? camoRateScale(r) : null;
+   const ratio = m ? (scale != null ? +(m.can_pop / m.needs * scale).toFixed(2) : m.ratio) : null;
+   if (m && ratio < CAMO_CAPACITY_AT) {
+    rounds.camo_capacity = r; ratios.camo_capacity = ratio; canPop.camo_capacity = m.can_pop; needs.camo_capacity = m.needs;
+    if (camoRate) camo = {scale: scale ?? 1, margin: m.ratio};
+   }
   }
   if (kinds.includes('lead_capacity') && r <= ahead('lead_capacity') && !('lead_capacity' in rounds)) {
    const m = leadCheck(state.towers, r, {lives: state.lives, paths, ddt: leadDdt});
@@ -136,6 +168,10 @@ export function threatShort(state, paths = [], {lead = THREAT_LEAD_ROUNDS, kinds
  const short = {round: Math.min(...missing.map(k => rounds[k])), missing, rounds, ...(Object.keys(ratios).length ? {ratios, can_pop: canPop, needs} : {})};
  if (leadDdt) Object.defineProperty(short, 'leadDdt', {value: true, enumerable: false});
  Object.defineProperty(short, 'leadAt', {value: leadAt, enumerable: false});
+ if (camo && 'camo_capacity' in rounds) {
+  Object.defineProperty(short, 'camoScale', {value: camo.scale, enumerable: false});
+  Object.defineProperty(short, 'camoMargin', {value: camo.margin, enumerable: false});
+ }
  return short;
 }
 
@@ -144,7 +180,7 @@ export function threatShort(state, paths = [], {lead = THREAT_LEAD_ROUNDS, kinds
 export const threatAdds = (state, c, short, paths = []) => threatEffect(state, c, short, paths).adds;
 // threatAdds plus burst_gain: the burst ratio the purchase adds for the round burst is due (null when it adds none).
 // camo_gain: the camo margin it adds for the round camo_capacity is due (null when it adds none); lead_gain: the same for
-// lead_capacity's Lead margin.
+// lead_capacity's Lead margin. With camoRate (short.camoScale) camo_gain is the camo rate ratio it adds.
 export function threatEffect(state, c, short, paths = []) {
  if (!spends(c) || !short) return {adds: [], burst_gain: null, camo_gain: null, lead_gain: null};
  const towers = after(state, c);
@@ -153,7 +189,7 @@ export function threatEffect(state, c, short, paths = []) {
   if (k === 'camo_capacity' || k === 'lead_capacity') {
    const check = k === 'camo_capacity' ? camoCheck : leadCheck;
    const added = (check(towers, short.rounds[k], {lives: state.lives, paths, ddt: short.leadDdt === true})?.can_pop ?? 0) - short.can_pop[k];
-   if (added > 0 && short.needs?.[k] > 0) { if (k === 'camo_capacity') camoGain = added / short.needs[k]; else leadGain = added / short.needs[k]; }
+   if (added > 0 && short.needs?.[k] > 0) { if (k === 'camo_capacity') camoGain = added / short.needs[k] * (short.camoScale ?? 1); else leadGain = added / short.needs[k]; }
    return added > 0;
   }
   const check = roundCheck(towers, short.rounds[k], {lives: state.lives, paths, useReach: true});
@@ -208,14 +244,34 @@ export function answerPool(state, context = {}) {
 // binding (btd6-jev-v6 revision 9, btd6-playbook-v5 revision 13, btd6-claude-v1 revision 12): with lives <= 1, the
 // options are reduced to the deciding gap's answers (bindAnswers); the result also carries unbound, the order-only
 // {candidates, rule}, for early_short (policy-v4.mjs floorRulesV4). leadDdt: as threatShort (true gives v6 revisions 12 to 14);
-// leadAt: as threatShort. capacityUnderMoab (policy-v4.mjs moabCapacity, from btd6-jev-v6 revision 19, btd6-playbook-v5 revision 23
+// leadAt and camoRate: as threatShort. capacityUnderMoab (policy-v4.mjs moabCapacity, from btd6-jev-v6 revision 19, btd6-playbook-v5 revision 23
 // and btd6-claude-v1 revision 22): with moabFirst, camo_capacity and lead_capacity are still evaluated (only a burst gap alone
 // leaves the options as they are), so moab_short's DDT binding and saving can keep their answers (capacityAnswers). Saving is
 // unchanged: lead_capacity still doesn't save while moabFirst.
-export function applyThreatShort(state, candidates, {paths = [], lead = THREAT_LEAD_ROUNDS, kinds = THREAT_KINDS, burstLead = lead, burstGain = false, all = candidates, pool = null, pressure = null, moabFirst = false, binding = false, leadDdt = false, leadAt = LEAD_CAPACITY_AT, capacityUnderMoab = false} = {}) {
+// capacityBefore (policy-v4.mjs capacityNearer, from btd6-jev-v6 revision 21, btd6-playbook-v5 revision 25 and btd6-claude-v1
+// revision 24): with moabFirst, moab_short's short round. When only rate kinds are missing and camo_capacity or lead_capacity
+// is due at a round before it, those kinds (the ones due before it) are evaluated as without moabFirst; burst stays aside and
+// saving is unchanged (none while moabFirst). The rule then records before_moab (that round) and the result carries nearer: true.
+// camoBindShare (THREAT_OPTIONS_R21; with camoRate only): with one life camo_capacity binds only when its best affordable answer
+// (a known cost within the cash) adds at least camoBindShare x (CAMO_CAPACITY_AT - the rate) to the rate (camoBindWeak). Otherwise
+// it only orders its answers first, as with two or more lives, and the rule records camo_bind_held: {gain, need}; under
+// capacityBefore it isn't evaluated at that decision (camo_capacity stays set aside for moab_short). lead_capacity is unchanged.
+// capacityAt (policy-v4.mjs capacitySame, from btd6-jev-v6 revision 22, btd6-playbook-v5 revision 26 and btd6-claude-v1
+// revision 25): with moabFirst, moab_short's short round. When only rate kinds are missing, no capacityBefore round applies and
+// camo_capacity or lead_capacity is due at that round, those kinds are evaluated as without moabFirst (camo_capacity only past
+// camoBindShare's bar, as under capacityBefore), so moab_short's binding and saving can keep their answers (capacityAnswers);
+// burst stays aside and saving is unchanged. The rule then records at_moab (that round).
+export function applyThreatShort(state, candidates, options = {}) {
+ const {paths = [], lead = THREAT_LEAD_ROUNDS, kinds = THREAT_KINDS, burstLead = lead, burstGain = false, all = candidates, pool = null, pressure = null, moabFirst = false, binding = false, leadDdt = false, leadAt = LEAD_CAPACITY_AT, camoRate = false, capacityUnderMoab = false, capacityBefore = null, capacityAt = null, camoBindShare = 0} = options;
  if (!state.in_game || state.popup) return {candidates, rule: null};
- const short = threatShort(state, paths, {lead, kinds, burstLead, leadDdt, leadAt});
- if (!short || (moabFirst && short.missing.every(k => capacityUnderMoab ? k === 'burst' : isRate(k)))) return {candidates, rule: null};
+ const short = threatShort(state, paths, {lead, kinds, burstLead, leadDdt, leadAt, camoRate});
+ const near = moabFirst && capacityBefore != null && short && short.missing.every(isRate)
+  ? short.missing.filter(k => (k === 'camo_capacity' || k === 'lead_capacity') && short.rounds[k] < capacityBefore) : [];
+ if (near.length) { short.missing = near; short.round = Math.min(...near.map(k => short.rounds[k])); }
+ const same = !near.length && moabFirst && capacityAt != null && short && short.missing.every(isRate)
+  ? short.missing.filter(k => (k === 'camo_capacity' || k === 'lead_capacity') && short.rounds[k] === capacityAt) : [];
+ if (same.length) { short.missing = same; short.round = capacityAt; }
+ if (!short || (!near.length && !same.length && moabFirst && short.missing.every(k => capacityUnderMoab ? k === 'burst' : isRate(k)))) return {candidates, rule: null};
  const decorated = candidates.some(c => spends(c) && !('reach' in c.details)) ? withReach(state, candidates, paths) : candidates;
  const tagged = decorated.map(c => {
   const {adds, burst_gain: gain, camo_gain: camoGain, lead_gain: leadGain} = threatEffect(state, c, short, paths);
@@ -224,19 +280,36 @@ export function applyThreatShort(state, candidates, {paths = [], lead = THREAT_L
  });
  const adders = tagged.filter(c => c.details?.threat?.length).sort(threatOrder);
  if (!adders.length) return saveFor(state, candidates, short, {paths, all, pool, pressure, moabFirst});
+ const weak = binding && state.lives <= 1 ? camoBindWeak(state, adders, short, camoBindShare) : null;
+ if (weak && (near.includes('camo_capacity') || same.includes('camo_capacity'))) {
+  const others = [...near, ...same].filter(k => k !== 'camo_capacity');
+  return others.length ? applyThreatShort(state, candidates, {...options, kinds: kinds.filter(k => k !== 'camo_capacity')}) : {candidates, rule: null};
+ }
  const rest = tagged.filter(c => !c.details?.threat?.length && c.details?.kind !== 'wait' && c.details?.kind !== 'start_round');
  const kept = [...adders, ...rest];
  const rule = {kind: 'threat_short', removed: tagged.length - kept.length, round: short.round, missing: short.missing, rounds: short.rounds,
-  adders: adders.length, first: adders[0].id, ...(short.ratios ? {ratios: short.ratios} : {}), ...camoRecord(short), ...leadRecord(short),
+  adders: adders.length, first: adders[0].id, ...(near.length ? {before_moab: capacityBefore} : {}), ...(same.length ? {at_moab: capacityAt} : {}), ...(short.ratios ? {ratios: short.ratios} : {}), ...camoRecord(short), ...leadRecord(short),
   ...(camoPerDollar(adders[0]) != null && !checks(adders[0]) ? {first_camo_gain: adders[0].details.camo_gain, first_cost: adders[0].details.cost ?? null}
    : leadPerDollar(adders[0]) != null && !checks(adders[0]) ? {first_lead_gain: adders[0].details.lead_gain, first_cost: adders[0].details.cost ?? null}
    : adders[0].details.burst_gain != null ? {first_gain: adders[0].details.burst_gain, first_cost: adders[0].details.cost ?? null} : {})};
- if (!binding || !(state.lives <= 1)) return {candidates: kept, rule};
+ const nearer = near.length ? {nearer: true} : {};
+ if (!binding || !(state.lives <= 1)) return {candidates: kept, rule, ...nearer};
  const bound = bindAnswers(adders);
+ if (bound.kind === 'camo_capacity' && weak) return {candidates: kept, rule: {...rule, camo_bind_held: weak}, ...nearer};
  const record = {...rule, removed: tagged.length - bound.kept.length, binding: true, binding_kind: bound.kind,
   binding_removed: kept.length - bound.kept.length, ...(bound.kind === 'check' ? {} : {keep: THREAT_KEEP}), kept: bound.kept.map(c => c.id)};
  if (bound.value) withBindAnswers(record, {list: adders, value: bound.value, keep: THREAT_KEEP, unbound: kept});
- return {candidates: bound.kept, rule: record, unbound: {candidates: kept, rule}};
+ return {candidates: bound.kept, rule: record, unbound: {candidates: kept, rule}, ...nearer};
+}
+
+// camoBindShare's guard: {gain, need} when camo_capacity is due on the camo rate and no affordable answer (a known cost within
+// the cash) adds at least share x (CAMO_CAPACITY_AT - the rate) to it; null otherwise (and with share 0 or without camoRate).
+export function camoBindWeak(state, adders, short, share) {
+ if (!(share > 0) || short.camoScale == null || !short.missing.includes('camo_capacity')) return null;
+ const need = share * (CAMO_CAPACITY_AT - short.ratios.camo_capacity);
+ const gains = adders.filter(c => c.details.camo_gain != null && Number.isFinite(c.details.cost) && c.details.cost <= state.cash).map(c => c.details.camo_gain);
+ const gain = gains.length ? Math.max(...gains) : 0;
+ return gain >= need ? null : {gain, need: +need.toFixed(4)};
 }
 
 // The binding's answers before the keep cut, on the rule record for the one-life tower cap (policy-v6.mjs applyTowerCap,
@@ -280,8 +353,11 @@ export function capacityAnswers(options, cash) {
  return out;
 }
 
-// The camo_capacity part of the rule's record: the round, its camo margin and the threshold.
-const camoRecord = short => 'camo_capacity' in short.rounds ? {camo_capacity: {round: short.rounds.camo_capacity, camo_margin: short.ratios.camo_capacity, at: CAMO_CAPACITY_AT}} : {};
+// The camo_capacity part of the rule's record: the round, its camo margin and the threshold; with camoRate also camo_rate,
+// the rate ratio the threshold applies to.
+const camoRecord = short => !('camo_capacity' in short.rounds) ? {}
+ : short.camoScale != null ? {camo_capacity: {round: short.rounds.camo_capacity, camo_rate: short.ratios.camo_capacity, camo_margin: short.camoMargin, at: CAMO_CAPACITY_AT}}
+ : {camo_capacity: {round: short.rounds.camo_capacity, camo_margin: short.ratios.camo_capacity, at: CAMO_CAPACITY_AT}};
 // The lead_capacity part: the round, its Lead margin and the threshold.
 const leadRecord = short => 'lead_capacity' in short.rounds ? {lead_capacity: {round: short.rounds.lead_capacity, lead_margin: short.ratios.lead_capacity, at: short.leadAt ?? LEAD_CAPACITY_AT}} : {};
 

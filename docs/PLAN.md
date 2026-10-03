@@ -280,6 +280,17 @@ New speed label, not the default: **`graded:10+moab3+camo`** (`--camo-margin`). 
 - **Not adopted now:** the camo margin in `roundCheck` verdicts and rules; the Purple margin; a position-aware estimate (open items).
 - UNVERIFIED: a live run of `+camo` and of the new table; the replay has no bloon positions (`bloons_past`, `moab_outrun` missing) and takes a logged 10x as 10 game seconds per second.
 
+## Fix: Druid vine pops estimate (2026-10-02, branch `druid-fix`)
+
+- **Bug.** `data/towers.json` gave every Druid row with the Jungle vine (0-3-x, 0-4-x, 0-5-x and 1/2-3/4/5-x) 38 to 154 million pops a second. The export writes the vine's grab-and-destroy as pierce 9,999,999 and damage 9,999,999, and `generate.mjs` counted it as pierce 10 x that damage every 2.6 s. In log 2026-10-02T18-17-19 (jev-v6, Hard Standard) a 0-3-2 Druid was estimated at 0.28 to 1.7 billion pops a round in rounds 59 to 64 and measured 96 to 1,985; the round-76 total was 301,547,519 against 6,240 RBE. Every pops-based check counted that Druid as an enormous defence.
+- **Fix.** `generate.mjs` counts a projectile with `CollideOnlyWithTargetModel` at pierce 1, and caps the damage of a projectile filtered away from MOAB-class bloons at `KILL_CAP` (104, a Ceramic's RBE). Only the 15 vine rows change: 0-3-2 goes to 51.1 pops a second (about 1,400 a round at round 59; 0-5-0 102.9, 2-5-0 328.5). Recomputed on the log, rounds 59 to 64 total 5,124 to 32,048 against 3,164 to 14,413 RBE. `tower-table-bounds.test.mjs` fails on any row over 20,000 pops a second or over 100 times its tier level's median at rounds 10, 40 and 80 (the highest real ratio is 62).
+- **Table version.** `towers.json` `922e6b5e918c` becomes `e185f06f88c1` (`towers-candidate.json` `2fa9c669408f` becomes `f0802fd7406c`). This is a data fix for every current revision, not a new revision: once merged, both arms of a head-to-head use the new table, and runs before it with a Druid at tier 3 on the middle path carry the old estimate. `towers-v4.json` (frozen `btd6-jev-v4`) keeps the old rows.
+
+## Fix: retry transient TypeSafe server errors (2026-10-03, branch `retry-5xx`)
+
+- **Bug.** In log 2026-10-03T02-59-57 (jev-v6), a Jev request at round 55 got `TypeSafe HTTP 520`. The runner logged `error` and `runner_paused`, made no further decisions, and the match was lost at round 76 holding $40,660. Only timeouts were retried.
+- **Fix.** `core/jev.mjs` sends a request that gets HTTP 500, 502, 503, 504 or 520 to 524 once more after 1.5 s. If the second attempt also fails, the runner logs the error and pauses as before. 4xx answers are not retried. Each Jev retry (timeout or 5xx) is now logged as a `jev_retry` record with `attempt`, `delay_ms` and either `timed_out` or `status`.
+
 ## Next steps, in order
 
 **CHIMPS series 1 (started 2026-10-01 19:09 UTC; Marcus: "continue your recommendations" after the pause from 11:20). Series 1, 1b and 1c lost every match at round 6; series 1d (`btd6-jev-v6` revision 8, `early_short` binding) got past the opening and lost at the first threat rounds; series 1e (revision 9, `threat_short` binding with one life) reached rounds 95, 90, 78, 78 and 28; series 1f (revision 10, the one-life cap) lost its first match at round 51 to a rule deadlock and stopped after match 2; series 1g (revision 11) reached rounds 28, 93, 90, 90 and 90; series 1h runs revision 14 (Lead capacity, DDT-capable MOAB damage, burst stand-aside).**
@@ -734,6 +745,97 @@ New speed label, not the default: **`graded:10+moab3+camo`** (`--camo-margin`). 
   - **Decided: `btd6-jev-v6` revision 21 (v5 25, claude-v1 24): revision 20 plus camo_capacity on Model B** (due below 1.0, binding as today), built after revision 20 merges.
     - **Head to head against revision 18 together with revision 20, not separately.** Revision 20 acts only once a DDT round is in view (round 80 on), so losses before round 80 measure the camo change alone. The losses at rounds 93 and 95 come from DDTs and camo regrowing Ceramics, so passing them needs both changes. And fewer camo losses before round 80 would waste fewer matches.
     - **If revision 21 loses,** revision 20 is tested alone.
+    - **Added to revision 21 after its replay** (built on `camo-b`): a camo_capacity or lead_capacity round that comes before moab_short's short round is no longer set aside by moab_short.
+      - The replay showed revision 21's camo rule due at rounds 34 and 35 before the round-37 loss and at round 75 before the round-78 loss.
+      - It was then set aside at round 36 (round 40 in view) and at rounds 76 and 77 (round 80 in view), which is where it mattered.
+    - **Series 1l comparison rule, set before any match:** 5 pairs, alternating which arm goes first. All matches count, including losses before round 80, because the camo change acts there.
+      - Keep revision 21 if its median round reached is higher than revision 18's, and it doesn't lose more matches before round 80.
+      - If the medians tie, the arm with fewer losses before round 80 and more matches past round 95 is kept.
+    - **Series 1l setup:** revision 21 merged into main at 31a070e (510 tests; a dry run records revision 21 and table `e185f06f88c1`).
+      - The control is revision 18 from `r18-control` (4366dc3), with the Druid-fixed `towers.json` copied in, so both arms use table `e185f06f88c1`. The control's runs record `code_dirty: true` for that file.
+      - Bridge 0.3.16 (the lab build). `go-chimps1l-ab.sh 5` > `chimps1l-a.log`, with the candidate first in odd pairs.
+    - **Series 1l so far:**
+      - match 1 (revision 21): lost at round 94 to Ceramics, with $425;
+      - match 2 (revision 18): lost at round 93;
+      - match 3 (revision 18): lost at round 28 to Leads;
+      - match 4 (revision 21): lost at round 93 to camo regrowing Ceramics, holding $3,099. It made 76 DDT-saving decisions; once its Sniper's cheaper upgrades were bought, the best-value target became a $34,560 upgrade (+110 DDT damage per second) for rounds 90 and 93, out of reach before them.
+    - **Match 5 (revision 21) is void and gets a replacement** after the five pairs.
+      - At round 55 a Jev request got TypeSafe HTTP 520. The runner paused (`error`, `runner_paused`) and made no decisions until the match was lost at round 76, holding $40,660.
+      - Timeouts are retried once, but 5xx answers weren't. A retry for 500, 502 to 504 and 520 to 524 is being built on branch `retry-5xx`, to merge after the series so both arms run unchanged code.
+    - **Open for the next revision:** the DDT saving needs a reachability check. A target that can't be afforded before its round shouldn't hold purchases back (1k match 4 and 1l match 4).
+    - **Matches 6 to 10 and the replacement:**
+      - match 6 (revision 18): lost at round 93 to camo regrowing Ceramics;
+      - match 7 (revision 18): lost at round 56 to camo Pinks;
+      - match 8 (revision 21): lost at round 93 to camo regrowing Ceramics, holding $11,133. It saved from round 80 for $23,220, then $34,560 upgrades, with cash peaking near $16,000 to $17,500. From round 90, camo_capacity for round 93 was deferred to the saving.
+      - match 9 (revision 21): lost at round 90 to camo DDTs;
+      - match 10 (revision 18): lost at round 28 to Leads;
+      - the replacement (revision 21): lost at round 93 to DDTs and regrowing Ceramics.
+    - **Series 1l result (02:12 to 04:14 UTC on 2026-10-03; progress data 2aa7bcd; the void match is tagged `typesafe-520`):**
+
+      | Arm | Rounds reached | Median | Lost before round 80 |
+      |---|---|---|---|
+      | revision 21 | 94, 93, 93, 90, 93 | 93 | 0 |
+      | revision 18 | 93, 28, 93, 56, 28 | 56 | 3 (28, 56, 28) |
+
+      - **Decided: revision 21 is kept** under the comparison rule (median 93 against 56, and fewer losses before round 80).
+      - **Its gain is in the early and middle game:** revision 18 lost three matches before round 80, one to camo at 56 and two to Leads at 28, and revision 21 lost none.
+      - **The two round-28 losses may be partly chance.** Revision 18 lost none at round 28 in series 1j. Revision 21's camo answers around rounds 21 to 24 (Wizards with camo detection also pop Lead) may help there too.
+      - **The late game didn't move:** revision 21 reached 90 to 94, against revision 18's 93 to 95 in series 1j.
+    - **The 5xx retry is merged** (98111a9, merge cf4b5cf).
+- **Decided: `btd6-jev-v6` revision 22 (v5 26, claude-v1 25): the DDT saving and capacity answers in the last rounds.**
+  1. **Reachable saving targets.** The DDT saving saves only for a pool purchase that can be afforded before its target round starts, meaning its cost is at most the cash now plus the expected income until then. Among those, the best gain per dollar wins, with ties going to the cheaper one. With none reachable, it doesn't save, and moab_short orders as between 0.5 and 1.
+     - The expected income comes from a per-round table of CHIMPS cash income measured from the logs: the median cash gained per round, counting spending from the dispatch results.
+     - Evidence: series 1l matches 4 and 8 and series 1k match 4 saved for $23,220 to $34,560 upgrades with cash peaking at $7,000 to $17,500, and lost at round 93.
+  2. **Capacity answers on the same round.** When camo_capacity (past the 5% bar) or lead_capacity is due at the same round as moab_short's short round, its answers stay under moab_short's binding and saving: after the check answers, and before the MOAB adders (binding) or the pass options (saving). Revision 21 already lets a nearer round go first.
+     - Evidence: series 1l matches 4 and 8 lost at round 93 to camo regrowing Ceramics while camo_capacity for round 93 was deferred to the DDT saving.
+  - **Head to head against revision 21:** 5 pairs, under the same rule (median round, losses before round 80 counted).
+  - **Series 1l's comparison rule applies, set before any match:**
+    - Keep revision 22 if its median round reached is higher than revision 21's and it doesn't lose more matches before round 80.
+    - If the medians tie, keep the arm with more matches past round 95; if that ties too, the one with fewer losses before round 80.
+    - A match voided by infrastructure (a runner pause from an API error, a bridge failure) gets a replacement for that arm.
+  - **Series 1m setup:**
+    - The candidate is revision 22 on main (acaa73c, 522 tests; a dry run records revision 22 and table `e185f06f88c1`).
+    - The control is revision 21 from the worktree `r21-control` at 1561d9f, with `.env`, spots and calibration copied in. Its code includes the Druid fix and the 5xx retry, so the arms differ only by revision 22.
+    - `go-chimps1m-ab.sh 5` > `chimps1m-a.log`, with the candidate first in odd pairs.
+  - **Series 1m result (07:03 to 09:03 UTC on 2026-10-03; progress data 55bcc3b):**
+
+    | Arm | Rounds reached | Median | Lost before round 80 |
+    |---|---|---|---|
+    | revision 22 | 37, 59, 93, 95, 93 | 93 | 2 (camo at 37, camo Leads at 59) |
+    | revision 21 | 95, 93, 95, 28, 93 | 93 | 1 (Leads at 28) |
+
+    - **Decided: revision 22 is not kept.** The medians tie, no match passed round 95, and revision 21 lost fewer matches before round 80.
+    - Revision 22's two early losses aren't its own changes: it decides as revision 21 does before round 80. In both, no camo rule fired because the camo checks rated the rounds safe.
+    - Its late game (93, 95, 93, with $45 to $3,344 left) matched revision 21's, so the reachable saving and the same-round answers showed no measurable gain.
+    - **The noise problem:** losses before round 80, which both revisions share, decide these 5-pair comparisons. Revision 23 goes after them first.
+- **Density-aware pops estimate (built offline on branch `camo-data`, bc4039b):**
+  - A projectile hits min(pierce, the bloons it can reach), from each round's arrival rate, the time a bloon spends in the tower's coverage and the attack's radius. A layered bloon counts as the cluster it splits into.
+  - **Rounds that lost lives** (862 camo-capable tower-rounds): actual pops over the estimate, median 0.44 today and 0.62 density-aware.
+  - **Rounds without leaks:** the density-aware sum falls below actual in 19% (3% today), so it is cautious.
+  - **CHIMPS camo rounds** (817), below 1.0:
+    - today's margin flags 26 and catches 19 of 47 leaks;
+    - Model B flags 115 and catches 37;
+    - Model B on density-aware pops flags 318 and catches 45, with 2 leaks at 1.0 or above.
+- **Decided: `btd6-jev-v6` revision 23 (v5 27, claude-v1 26)** (branch `density-v23`, being built). camo_capacity (Model B, with the 5% bar) and lead_capacity use the density-aware estimate. Revision 22's options are off, so it sits on revision 21's behaviour.
+  - **Evidence:**
+    - the camo figures above;
+    - round 28's 6 Leads in 5 seconds have cost matches in series 1i, 1l (twice) and 1m, and lives in the zero-leak confirmation, where a Bomb Shooter 0-1-2 popped 27 of an estimated 166.
+  - **Head to head against revision 21:** 5 pairs, same rule.
+  - Implemented on branch `ddt-reach` (a7c78df, replay in the commit after; 522 tests, all passing except the known progress test): `policy-v4.mjs` `ddtReach` and `capacitySame`, `threat.mjs` `capacityAt`; `income.mjs` with `data/income-chimps.json` (median CHIMPS income per round from 67 logs; rounds 6 to 93 have 10 to 55 logs each, round 94 has 9 and 95 to 100 none, so 94 to 100 use the average of rounds 91 to 93). Dry runs record v6 22, v5 26 and claude-v1 25.
+    - Replay `npm run btd6:threat-replay -- --ddt-reach`, CHIMPS v6 logs since 2026-10-01T20-19 (50 logs, 16,637 decisions; logged saving-target costs added to the pool): saving decisions, revision 21 / 22: 115/115 in rounds 61-80 and 2,062/926 in 81+. Options differ in 579 decisions, all in rounds 81+; the same-round answers are kept in 112, in 9 logs before series 1l. Revision 22's targets: 153 saving decisions for $20,000 or more, 234 for $10,000 to $19,999, 399 for $5,000 to $9,999 and 255 below.
+    - First decision of rounds 85 to 93, where revision 21 saved for $34,560 at every one (series 1k match 4 from round 89 in the log):
+      - 1l match 4: saves for a $16,200 Dart upgrade (gain 3.3, reach $16,418 to $18,097) at rounds 85 to 87, then saves for nothing. camo_capacity for round 93 is held by the 5% bar at round 90 and binds through threat_short at 91 to 93.
+      - 1l match 8: saves for a $16,200 Dart upgrade at round 85 and a $23,220 upgrade (gain 27.7, reach $23,682) at 86, then saves for nothing. camo_capacity for round 93 binds through threat_short at 90 to 93.
+      - 1k match 4: no saving at rounds 85 to 90; camo_capacity for round 90 is held at 87 and 88 and binds at 89 and 90; a $1,405 saving at 91; moab_short binds at 92 and 93.
+      - No same-round keeps in these three: once the saving is dropped, moab_short has no affordable DDT adder to bind on, so threat_short's own camo binding applies.
+    - Hard Standard zero-leak (20 v6 logs, 6,492 decisions): no decision differs.
+- **Open: an intermittent test.** One `npm test` run on main failed one test (512 of 513), and the next passed all 513. The likely one is `ports.test.mjs` "the calibration update holds a short lock: two writers at once keep both runs", which failed once before with EPERM when Windows refused the lock file while two writers ran. Make it tolerate a transient EPERM, or retry.
+    - **Added after the nearer-round rule:** camo_capacity on the rate binds only when its best affordable answer adds at least 5% of the gap to 1.0; otherwise it only orders. Without the bar, camo binding in rounds 61 to 80 rose from 0 to 1,001 of 4,033 decisions, and before the round-78 loss the answers raised the rate by about 0.002 against a gap of 0.88.
+    - Implemented on branch `camo-b` (fa0edee, 4baf88c and 1c04b04, 507 tests): `threat.mjs` `camoRate`; `policy-v4.mjs` `capacityNearer` (with one life a camo_capacity or lead_capacity round before moab_short's short round keeps threat_short's binding, and moab_short neither binds nor saves over it); the gap guard `camoBindShare` (camo_capacity on the rate binds, and takes precedence over moab_short, only when its best affordable answer adds at least 5% of the gap to 1.0; otherwise it only orders). Replay `npm run btd6:threat-replay -- --camo-rate`, CHIMPS v6 logs since 2026-10-01T20-19 (39 logs, 13,403 decisions; rebuilt purchases with no cost in the logs, 93,575 in all, left out as not affordable):
+      - camo_capacity due (20 / 21): 59/59, 157/657, 0/1,304 and 1,071/1,240 in rounds 6-30, 31-60, 61-80 and 81+.
+      - camo binding, revision 20 / 21 without the guard / 21: 24/24/24, 138/535/518, 0/1,001/158 and 73/110/25. Options differ from revision 20 (without the guard / 21): 0/0, 394/409, 964/221 and 36/76.
+      - Losses: round 37 binds at rounds 34 to 36 (round 36 over moab_short's round 40; Skywarden 2-0-1 for $230, then Wizard 0-1-2 for $325 and Dart 1-0-3 for $620; gains 0.26 to 1.25 against a need of 0.029). Round 78: the guard holds the binding at round 75 (best gain 0.0021 against 0.044), and moab_short (round 80) acts at rounds 76 and 77 as in revision 20. Round 33 is never due.
+      - Hard Standard zero-leak (20 v6 logs, 6,492 decisions): options differ from revision 20 in 815 without the guard and 363 with it.
     - **Open:** a pops estimate that counts pierce only where bloons are dense enough to use it (round 33).
 - **Publishing (decided by Marcus, 2026-10-02): a curated public copy under the name `jev-game-lab`, published only after he approves the exact snapshot.**
   - The private repo stays the working lab and is renamed (for example `jev-game-lab-private`) before the public repo is created. Every local remote is repointed first.
@@ -751,7 +853,18 @@ New speed label, not the default: **`graded:10+moab3+camo`** (`--camo-margin`). 
     - Privacy and override scans are clean.
     - Both builds compile with 0 errors and pass `npm test` and the bridge tests.
     - Checked by bytes: the lab DLL contains the override and its Harmony patches, and the public DLL contains neither.
-  - **Before Marcus's final approval:** both builds smoke-tested in the game on the mod account (`smoke-0316.sh`).
+  - **Smoke test in the game on the mod account (`smoke-0316.sh`, 22:45 UTC):**
+    - the public build reported 0.3.16 with `unlock_all: false` and no override fields, and reached the main menu;
+    - the lab build reported 0.3.16 with `unlock_all: true`, 8 patches and 0 failures, and reached the main menu.
+
+    The lab build is installed, and the loop scripts now expect 0.3.16.
+  - **Published on 2026-10-02 at about 23:00 UTC, after Marcus's final approval:** https://github.com/greenlittleapple/jev-game-lab, public.
+    - It has one root commit, d94f73c ("Snapshot of the lab at 1c383bb"), by the noreply author: 224 files on `main` only. The lab-only unlock file, the lab-only docs, `.env` and `.private` are absent.
+    - The description and the nine topics above are set. On the public page the README renders and both progress charts load.
+    - The private working repo is now `greenlittleapple/jev-game-lab-private`. Every local `origin` points there, and its `main` and `moab-count` were checked with `ls-remote` before the public repo was created.
+    - **Later publishes:** `bash .private/publish-public-btd6.sh` (a dry run), then `--push`. Each adds one snapshot commit after the same checks. Nothing publishes automatically.
+    - **Marcus approved one refresh on 2026-10-03, to go out after series 1m** with its result in the README and progress. Refreshes after that need his approval again.
+    - **Public docs** (README, docs, PLAN) must not name the lab's unlock file or describe how it works; the script's override scan blocks the publish if they do.
 - **Series HS-z2 (started 21:44 UTC): `btd6-playbook-v5` revision 23 in zero-leak mode on Hard Standard**, 5 matches, with the HS-z1 flags and the Hard Standard playbook 1.1.0 (`go-hs12z.sh`, `hs12z-a.log`).
     - It uses game time while revision 20 is built, and starts PLAN's item on zero-leak for the other designs.
     - Revision 23 differs from 22 only in DDT rounds, which Hard Standard never reaches.
@@ -760,6 +873,31 @@ New speed label, not the default: **`graded:10+moab3+camo`** (`--camo-margin`). 
     - The two losses were both at round 76, to a burst of regrowing Ceramics: lives fell to −687 and −25, with threat_short binding on burst. This is the playbook's known late-burst weakness from series 5.
     - Jev alone with its rules won 20 of 20 in this mode, 19 with no lives lost. So the setup does separate the designs, though 5 matches is a first look.
     - The live strategist (`btd6-claude-v1`) hasn't played zero-leak mode yet.
+- **Considered and declined (2026-10-02, Marcus asked): Banana Farms.**
+  - **CHIMPS disables farm income.** Every cash source except starting cash, cash per pop and end-of-round cash is off ([Bloons wiki: CHIMPS](https://www.bloonswiki.com/CHIMPS)), and no CHIMPS log has a farm on offer.
+  - **On Hard Standard farms work without clicks** once they have Banana Salvage (x-x-2): uncollected bananas, which otherwise spoil after 15 seconds, are collected at 85%. But zero-leak mode already wins 19 of 20 with cash left at the end, and its one lives-losing match leaked Leads at rounds 28 and 30, where an early farm would have cut the defence further.
+  - **Why farms never appear:** the rules rank options by defence and keep at most 16, so farms reach Jev rarely (56 of 42,346 decisions since 2026-10-01, all on Hard Standard) and were never chosen.
+  - **Revisit** only for money-limited goals on Hard Standard (for example, harder maps).
+- **Series HS-z3 (started 23:07 UTC): `btd6-claude-v1` revision 22 in zero-leak mode on Hard Standard**, 5 matches, one at a time (`go-hs13z-one.sh <n>`, `hs13z-a.log`), with the HS-z1 flags.
+  - Each match gets a fresh `general-medium` strategist agent. It works from docs/BTD6-STRATEGIST.md and the requests only, waits in 2-minute slices, and stops when its match's log has `session_end`. The strategy channel starts each match empty.
+  - Revision 22 differs from 21 only in DDT rounds, which Hard Standard never reaches.
+  - This completes the three designs on the one setup where Jev alone now succeeds: v6 won 20 of 20 (19 clean) and the playbook 3 of 5.
+  - **Result (23:07 to 00:17 UTC; progress data eb76ddd): 4 of 5 won, all with 100 lives.** Match 4 lost at round 76 to regrowing Ceramics (241 lives).
+    - The strategists answered 13 to 15 requests per match, with one schema error (a `review_round` that wasn't after the current round), and used 68,000 to 83,000 tokens each.
+    - A leftover unanswered request from match 4 was moved out of the channel before match 5 (`.private/btd6/strategy-stale/`).
+  - **The three designs in zero-leak mode:**
+
+    | Design | Matches | Won | Won with 100 lives | Losses |
+    |---|---|---|---|---|
+    | v6 r18 (Jev with its rules) | 20 | 20 | 19 | — |
+    | claude-v1 r22 (live strategist) | 5 | 4 | 4 | round 76 |
+    | playbook-v5 r23 | 5 | 3 | 3 | round 76, round 76 |
+
+  - **Round 76 is 60 regrowing Ceramics within 1.8 seconds.**
+    - The margins don't separate the losses. Pops estimate over RBE at round 76: v6 0.59 to 0.96 with no losses; the plan arms' three losses at 0.70, 0.96 and 1.30. Burst ratios at rounds 73 to 76 overlap too.
+    - The plan arms had specialised in MOAB damage before it. Match 4's strategist had a fourth Bomb Shooter at 2-4-0, and 198 MOAB damage per second against 130 needed at round 75.
+    - **Open:** a ceramic-burst threat in the strategist brief and the playbook for round 76.
+  - **Open (data glitch):** v6's 18:17 run logged a round-76 pops estimate of 301,547,519, so some tower's estimate is broken.
 - **Decided next, offline first: the DDT-capable figure with support effects.**
   - A tower counts against a DDT when it pops Lead and Black, by its own attack or under a Village MIB covering it.
   - It must also see the DDT: by its own camo detection, under a Village Radar Scanner covering it, or after a camo remover upstream on the track (Shimmer, Counter-Espionage, or any other the export shows) has removed the camo.
@@ -785,6 +923,13 @@ New speed label, not the default: **`graded:10+moab3+camo`** (`--camo-margin`). 
      - The binding's MOAB gains and the saving's target and gap are computed for that round. With no due round below 0.5, the weakest round still sets the ordering between 0.5 and 1.
      - Without this, the deadline need makes rounds 99 and 100 the weakest, and the saving would chase upgrades that can't be afforded before rounds 93 and 95 (match 4 saved for $34,560 upgrades for rounds 99 and 100 and lost at round 93).
   - **Before its head-to-head, the replay must show** the DDT ratios by round from 80 to the loss in series 1j's logs, the binding and saving counts, and the answers revision 20 would offer at rounds 85 to 94.
+  - **Implemented on branch `ddt-need`** (commit 235eea4, 493 tests pass; not merged). It includes two later decisions: with one life, moab_short's binding and DDT saving target the nearest due round below 0.5 instead of the weakest (`moabNearest`; series 1k match 4 saved for $34,560 upgrades aimed at rounds 99 and 100 and lost at round 93 with $85), and revision 19's `moabCapacity` and `ddtGapShare` are off again (series 1k kept revision 18), still switchable.
+    - Needs before the margin, from `moab_groups`: round 90 159 (3 DDTs over 1.5 s plus one 6.0 s window), round 93 298 (its 6 DDTs), round 95 889 (30 DDTs and 50 Fortified MOABs over 36 s). With one life the margin puts round 95 at 1,285 to 1,335. The earlier estimates above (217, 398, 500) used other intervals.
+    - Replay (`npm run btd6:threat-replay -- --ddt-need`), CHIMPS v6 logs from 2026-10-01T20-19, from round 76, 39 logs, 4,620 rebuilt decisions, revision 18 against 20: moab_short binds at 1,222 and 2,190; saves at 2,175 decisions (236 match-rounds) and 1,360 (205); only pass options left at 2,963 and 2,044; option sets differ at 1,686. The nearest-round rule moves the target round at 1,138 binding and 994 saving decisions; without it revision 20 saves at 1,013 decisions (155 match-rounds). Hard Standard from 2026-10-01: 0 of 7,988 decisions differ (27 normal logs) and 0 of 6,612 (20 zero-leak logs, read with one life).
+    - Series 1j's lowest DDT-round ratio, rounds 80 to the loss: revision 18's check 0.05 to 0.55, set by round 90 to round 88 and by round 99 or 100 after; revision 20's 0.03 to 0.43, set by round 90 to round 82, round 93 at 83 and 84, and round 95 or 99 from round 85 (0.03 to 0.14).
+    - Revision 20's binding answers at the first decision of rounds 85 to 94 in series 1j: it binds at 20 of 48. The answers are mostly Sniper upgrades ($270 to $6,805, gains 0.1 to 22.9, up to 11.5 per $1,000) and once the $16,200 Dart 5-0-2 (+3). At the rest it saves or has no affordable MOAB adder.
+    - **Added on the same branch: the DDT saving targets the most DDT gain per dollar** (`ddtSaveBest`, on in revision 20; ties to the cheaper; the binding is unchanged; `ddtSaveBest: false` gives the cheapest adder). 494 tests pass. Saving-only replay on the same 39 logs (4,620 decisions): revision 18 saves at 2,175 decisions (236 match-rounds); revision 20 with the cheapest adder at 1,360 (205); with the best per dollar at 1,552 (220). In series 1j and 1k the $595 Alchemist targets (gain 0.1 to 0.4) become $2,375 Sniper upgrades (gain about 21) or a $6,805 Sniper 4-0-2 (gain 16), and the late $120 to $380 targets for round 95 become $270 to $2,375 upgrades (gain 3 to 21). Where the pool's only DDT adder for a round is the $16,200 Dart 5-0-2 (05-50-38, 06-21-07, 20-15-21, 20-46-18, 21-14-35), the target stays that (gain 2 to 3.5).
+    - Revision 20's saving targets (series 1j and 1k): the cheapest DDT-capable purchase, mostly the $16,200 Dart 5-0-2 (gain 2.1 to 3.2) or a $595 Alchemist (gain 0.1 to 0.4), against gaps of 140 to 230 for round 90, 290 to 420 for round 93 and about 1,150 to 1,190 for round 95.
 
 **Series 7 (played 2026-10-01 08:56 to 11:10 UTC on main 3a79fd5).**
 - **Results:**

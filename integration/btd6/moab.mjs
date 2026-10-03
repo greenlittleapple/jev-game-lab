@@ -33,6 +33,18 @@
 // its own damage figure. Series 1g match 2 (CHIMPS, revision 11) measured 116 per second on round 90's DDTs against an
 // estimate of 110 that counted every tower, while the MOAB rounds around it measured 172 to 246; it lost at round 93 to
 // camo DDTs. Earlier revisions and btd6-jev-v4 count every tower's damage (setDdtCheck(false), the default).
+// Deadline-based need in rounds with DDTs (btd6-jev-v6 revision 20, btd6-playbook-v5 revision 24, btd6-claude-v1 revision 23;
+// setDdtNeed): each MOAB-class bloon must die within its kill window (windowSeconds at its speed) after it spawns. Spawns come
+// from rounds.json moab_groups (data/generate.mjs; a group's bloons spread evenly from its start to its end; moabSpawns). For
+// every interval [a, b] from one bloon's spawn a to another's deadline b (its spawn plus its window), b > a, the demand is the
+// health of the bloons that spawn at or after a and fall due by b, kept as a DDT part and the rest (moabDeadlines); the need is
+// that demand over b - a, times the lives margin. With the DDT check the figure is blendedDps of the two parts (all of it when
+// there is no DDT part), and the toughest interval has the highest need for its figure (ties: the higher need). One bloon on its
+// own gives the per-bloon need, so the need is never lower than the per-bloon one. Before the margin: round 90 about 217 (3
+// camo DDTs in 1.5 s; per bloon 66), round 93 about 398, round 95 about 500 for its 30 DDTs over 20 s with its 50 Fortified
+// MOABs. Rounds without DDTs (and so Hard Standard, which ends at round 80), a DDT round without timing, earlier revisions and
+// btd6-jev-v4 keep the per-bloon need (setDdtNeed(false), the default). The same revisions turn on the support-effects DDT figure
+// (setDdtSupport, DDT_SUPPORT_FROM), so the need sits on a figure that tracks measured DDT damage (docs/PLAN.md).
 import DDT_DATA from './data/towers-ddt.json' with {type: 'json'};
 import DDT_SUPPORT from './data/towers-ddt-support.json' with {type: 'json'};
 import {roundFacts, towerEstimate, margin, heroLevel} from './estimate.mjs';
@@ -105,11 +117,22 @@ export function earlyShare(t, range, paths) {
  const total = trackLength(paths), late = r.late * total * (1 - POP_BY);
  return Math.max(0, Math.min(1, (r.length - late) / (total * POP_BY)));
 }
+// earlyShare by paths list, then tower and range: the track geometry is most of moabCheck's time, and the replays and the
+// MOAB gains ask it for the same towers many times. Only for a paths list with track (the default [] is new each call).
+const shareCache = new WeakMap();
+function cachedShare(t, range, paths) {
+ if (!paths.length) return earlyShare(t, range, paths);
+ let byTower = shareCache.get(paths);
+ if (!byTower || byTower.size > 20000) shareCache.set(paths, byTower = new Map());
+ const key = `${JSON.stringify(t)}|${range}`;
+ if (!byTower.has(key)) byTower.set(key, earlyShare(t, range, paths));
+ return byTower.get(key);
+}
 // One tower's MOAB damage per second over the first POP_BY of the track: {dps, share, effective}.
 export function towerMoab(t, paths = []) {
  const e = towerEstimate(t);
  if (!e || !(e.moab > 0)) return {dps: 0, share: 0, effective: 0};
- const share = earlyShare(t, e.range, paths);
+ const share = cachedShare(t, e.range, paths);
  return {dps: e.moab, share: +share.toFixed(3), effective: +(e.moab * share).toFixed(2)};
 }
 // Whether a tower can hit a DDT (data/towers-ddt.json); false for a tower or tiers the table doesn't have, which also
@@ -118,7 +141,7 @@ export function hitsDdt(t) {
  const row = DDT_DATA.towers[t.base_id]?.[t.is_hero || t.base_id === 'Quincy' ? heroLevel(t) : (t.tiers ?? [0, 0, 0]).join('')];
  return row?.[0] === 1;
 }
-// DDT-capable damage with support effects (setDdtSupport; offline, default off, no policy uses it). data/towers-ddt-support.json
+// DDT-capable damage with support effects (setDdtSupport; default off, on from btd6-jev-v6 revision 20). data/towers-ddt-support.json
 // (data/generate.mjs ddtSupportValue) gives each tower's facts. With it on, a tower counts against a DDT when it:
 //  - hits a camo DDT on its own (hitsDdt, or the support table's camo_pops, which adds the Wizard's OverrideCamoDetectionModel:
 //    Wizard x-x-4 and x-x-5); or
@@ -202,9 +225,12 @@ export function ddtSupport(towers, paths = []) {
  return out;
 }
 let ddtSupportOn_ = false;
-// Support effects in the DDT-capable figure, set once per session like setDdtCheck. Off by default; no policy turns it on.
+// Support effects in the DDT-capable figure, set once per session like setDdtCheck: on for the policies and revisions in
+// DDT_SUPPORT_FROM (session.mjs, dashboard.mjs). Off by default.
+export const DDT_SUPPORT_FROM = {'btd6-jev-v6': 20, 'btd6-playbook-v5': 24, 'btd6-claude-v1': 23};
 export function setDdtSupport(on = false) { ddtSupportOn_ = !!on; }
 export const ddtSupportOn = () => ddtSupportOn_;
+export const ddtSupportFor = (policy, revision = null) => Object.hasOwn(DDT_SUPPORT_FROM, policy) && (revision == null || revision >= DDT_SUPPORT_FROM[policy]);
 // ddt: only the towers that can hit a DDT (support, default setDdtSupport: with support effects).
 export function moabDpsRaw(towers, paths = [], {ddt = false, support = ddtSupportOn_} = {}) {
  const sup = ddt && support ? ddtSupport(towers, paths) : null;
@@ -250,15 +276,83 @@ export function blendedDps(all, ddt, dps, ddtDps) {
 // Seconds a bloon of this relative speed takes to cross the first KILL_BY of the track.
 export const windowSeconds = (speed, paths = []) => KILL_BY * trackLength(paths) / (MOAB_SPEED * speed);
 
+let ddtNeed = false;
+// The deadline-based need in rounds with DDTs (header), set once per session like the DDT check: on for the policies and
+// revisions in DDT_NEED_FROM (session.mjs, dashboard.mjs).
+export const DDT_NEED_FROM = {'btd6-jev-v6': 20, 'btd6-playbook-v5': 24, 'btd6-claude-v1': 23};
+export function setDdtNeed(on = false) { ddtNeed = !!on; }
+export const ddtNeedOn = () => ddtNeed;
+export const ddtNeedFor = (policy, revision = null) => Object.hasOwn(DDT_NEED_FROM, policy) && (revision == null || revision >= DDT_NEED_FROM[policy]);
+// Each MOAB-class bloon a round sends, from rounds.json moab_groups: [{t, window, hp, ddt}] (t: its spawn in seconds from the
+// round start, window: its windowSeconds, hp: its health as moabHealth, ddt: its DDT part), or null when the round has no timing.
+export function moabSpawns(round, paths = []) {
+ const groups = roundFacts(round)?.moab_groups;
+ if (!groups?.length) return null;
+ const out = [];
+ for (const [name, count, start, end] of groups) {
+  const b = parseBloon(name);
+  if (!isMoabClass(b.base)) continue;
+  const hp = moabHealth(b.base, b.fortified), window = windowSeconds(RELATIVE_SPEED[b.base], paths), ddt = ddtPart({base: b.base, hp});
+  for (let i = 0; i < count; i++) out.push({t: start + (count > 1 ? (end - start) * i / (count - 1) : 0), window, hp, ddt});
+ }
+ return out.length ? out : null;
+}
+// The intervals that could set a round's deadline need, from its spawns: [{seconds, other, ddt, count, top}]. Each runs from a
+// spawn a to a deadline b (a spawn's t plus its window), b > a, and holds the spawns with t >= a and t + window <= b (other:
+// their non-DDT health, ddt: their DDT health, count, top: the largest one's health). An interval that another as short or
+// shorter with at least as much of both parts dominates is left out. null for no spawns.
+export function deadlinesOf(spawns) {
+ if (!spawns?.length) return null;
+ const starts = [...new Set(spawns.map(s => s.t))];
+ const ends = [...new Map(spawns.map(s => [s.t + "|" + s.window, s])).values()];
+ const all = [];
+ for (const a of starts) for (const e of ends) {
+  // The length as (e.t - a) + e.window, so a bloon's own interval is exactly its window.
+  const seconds = (e.t - a) + e.window;
+  if (!(seconds > 0)) continue;
+  const due = e.t + e.window;
+  let other = 0, ddt = 0, count = 0, top = 0;
+  for (const s of spawns) if (s.t >= a && ((s.t === e.t && s.window === e.window) || s.t + s.window <= due)) { other += s.hp - s.ddt; ddt += s.ddt; count++; top = Math.max(top, s.hp); }
+  if (count) all.push({seconds, other, ddt, count, top});
+ }
+ all.sort((x, y) => x.seconds - y.seconds || (y.other + y.ddt) - (x.other + x.ddt));
+ const out = [];
+ for (const c of all) if (!out.some(k => k.seconds <= c.seconds && k.other >= c.other && k.ddt >= c.ddt)) out.push(c);
+ return out;
+}
+const deadlineCache = new Map();
+// deadlinesOf a round's spawns, cached per round and track length (null without timing).
+export function moabDeadlines(round, paths = []) {
+ const key = round + ":" + trackLength(paths);
+ if (!deadlineCache.has(key)) deadlineCache.set(key, deadlinesOf(moabSpawns(round, paths)));
+ return deadlineCache.get(key);
+}
+
 // The defence against one round's MOAB-class bloons, or null when the round has none. The toughest bloon is the one
 // with the highest need for its damage figure (ties: the higher need); dps is that figure. ddt (default: setDdtCheck):
 // DDTs count at the DDT-capable damage, and the record adds ddt_dps and all_dps (every tower's) in a round with DDTs.
-export function moabCheck(towers, round, {lives = 1, paths = [], ddt = ddtCheck} = {}) {
+// need (default: setDdtNeed): in a round with DDTs and timing, the deadline-based need (header); the record then adds count
+// (bloons in the toughest interval) and hp_window (their health), seconds is the interval's length and hp_each its largest
+// bloon's health.
+export function moabCheck(towers, round, {lives = 1, paths = [], ddt = ddtCheck, need = ddtNeed} = {}) {
  const list = moabBloons(round);
  if (!list.length) return null;
  const all = moabDps(towers, paths);
  const hasDdt = ddt && list.some(b => ddtPart(b) > 0);
  const ddtDps = hasDdt ? moabDps(towers, paths, {ddt: true}) : all;
+ const deadlines = need && hasDdtRound(round) ? moabDeadlines(round, paths) : null;
+ if (deadlines?.length) {
+  const each = deadlines.map(c => {
+   const hp = c.other + c.ddt, n = hp / c.seconds;
+   const dps = hasDdt && c.ddt > 0 ? +blendedDps(c.other, c.ddt, all, ddtDps).toFixed(1) : all;
+   return {...c, hp, need: n, dps, per: dps > 0 ? n / dps : Infinity};
+  });
+  const toughest = each.reduce((a, b) => b.per > a.per || (b.per === a.per && b.need > a.need) ? b : a);
+  const needs = +(toughest.need * margin(lives, round)).toFixed(1), dps = toughest.dps;
+  return {round, bloons: moabList(round), hp: list.reduce((n, b) => n + b.hp * b.count, 0), hp_each: toughest.top, count: toughest.count,
+   hp_window: toughest.hp, seconds: +toughest.seconds.toFixed(1), dps, needs_dps: needs, ratio: needs ? +(dps / needs).toFixed(2) : Infinity,
+   enough: dps >= needs, ...(hasDdt ? {ddt_dps: ddtDps, all_dps: all} : {})};
+ }
  const each = list.map(b => {
   const seconds = windowSeconds(b.speed, paths), part = hasDdt ? ddtPart(b) : 0;
   return {...b, seconds, need: b.hp / seconds, dps: part ? +blendedDps(b.hp - part, part, all, ddtDps).toFixed(1) : all};
@@ -273,12 +367,12 @@ export function moabCheck(towers, round, {lives = 1, paths = [], ddt = ddtCheck}
 }
 
 // The MOAB-class rounds within MOAB_LEAD_ROUNDS of `now` (inclusive), and rounds with DDTs within ddtLead (setMoabDdtLead
-// by default), with their checks; the weakest first. ddt as for moabCheck.
-export function moabDue(towers, now, {lives = 1, paths = [], end = 100, lead = MOAB_LEAD_ROUNDS, ddtLead: dl = ddtLead, ddt = ddtCheck} = {}) {
+// by default), with their checks; the weakest first. ddt and need as for moabCheck.
+export function moabDue(towers, now, {lives = 1, paths = [], end = 100, lead = MOAB_LEAD_ROUNDS, ddtLead: dl = ddtLead, ddt = ddtCheck, need = ddtNeed} = {}) {
  const out = [];
  for (let r = now; r <= Math.min(end, now + Math.max(lead, dl)); r++) {
   if (r > now + lead && !hasDdtRound(r)) continue;
-  const c = moabCheck(towers, r, {lives, paths, ddt}); if (c) out.push(c);
+  const c = moabCheck(towers, r, {lives, paths, ddt, need}); if (c) out.push(c);
  }
  return out.sort((a, b) => a.ratio - b.ratio);
 }

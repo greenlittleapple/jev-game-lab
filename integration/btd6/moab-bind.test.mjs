@@ -128,7 +128,7 @@ test('a DDT round: only DDT-capable purchases count', () => {
  try {
   // With it round 90's DDTs are the shortest, and only the Druid, which hits DDTs, adds to that figure. Revision 18's floor:
   // from revision 19 the Super Monkey's upgrade also stays as a Lead capacity answer (moab-ddt-save.test.mjs).
-  const ddt = floorRulesV6(state, options, {paths: []}, {moabCapacity: false, ddtGapShare: 0});
+  const ddt = floorRulesV6(state, options, {paths: []}, {moabCapacity: false, ddtGapShare: 0, moabNearest: false, ddtReach: false, capacitySame: false});
   assert.deepEqual([moabRule(ddt).round, moabRule(ddt).adders, ids(ddt.candidates)], [90, 1, ['upgrade:4:p1']]);
  } finally { setDdtCheck(false); }
 });

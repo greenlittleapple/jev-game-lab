@@ -4,14 +4,16 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {floorRulesV6, applyTowerCap, TOWER_CAP} from './policy-v6.mjs';
-import {withBindAnswers, THREAT_KEEP} from './threat.mjs';
+import {floorRulesV6 as floorRulesV6Now, applyTowerCap, TOWER_CAP} from './policy-v6.mjs';
+import {withBindAnswers, THREAT_KEEP, THREAT_BURST_AHEAD} from './threat.mjs';
 import {EARLY_KEEP} from './early.mjs';
 import {btd6Game, claudeGameV1, playbookGameV5} from './game.mjs';
 import {adoptPlanV1, requestStampV1} from './plan-v1.mjs';
 import {loadPlaybook} from './playbook-v5.mjs';
 import {v0Round6, v0Catalog, meadowPaths as paths, meadowSpots, meadowSpot} from './fixtures/index.mjs';
 import {rebuild} from './threat-replay.mjs';
+// These fixtures test revisions before 21: camo_capacity on the camo margin (threatOptions: THREAT_BURST_AHEAD).
+const floorRulesV6 = (state, candidates, context, options = {}) => floorRulesV6Now(state, candidates, context, {threatOptions: THREAT_BURST_AHEAD, ...options});
 
 const ids = list => list.map(c => c.id);
 const buys = list => list.filter(c => c.details?.kind === 'place' || c.details?.kind === 'upgrade');

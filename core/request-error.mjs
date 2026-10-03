@@ -1,14 +1,15 @@
 // Request errors that say where they came from, so a run log can tell a Jev timeout from a bridge one.
 // source: 'jev' (the TypeSafe/Jev call), 'bridge_read' (a bridge request with no game effect) or
 // 'bridge_command' (POST /api/v1/command). endpoint is the URL or bridge path; timeout_ms the request's limit.
+// status is the HTTP status of an error answer, when there was one.
 
 // AbortSignal.timeout() rejects with a DOMException named TimeoutError.
 export const isTimeoutError = error => error?.name === 'TimeoutError' || error?.cause?.name === 'TimeoutError';
 
 export class RequestError extends Error {
- constructor(message, {source, endpoint, timeoutMs = null, timedOut = false, cause} = {}) {
+ constructor(message, {source, endpoint, timeoutMs = null, timedOut = false, status = null, cause} = {}) {
   super(message, cause ? {cause} : undefined);
-  Object.assign(this, {source, endpoint, timeoutMs, timedOut});
+  Object.assign(this, {source, endpoint, timeoutMs, timedOut, status});
  }
 }
 

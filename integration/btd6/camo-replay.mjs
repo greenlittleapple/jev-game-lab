@@ -10,6 +10,15 @@
 // with camo bloons; the decision is flagged at a threshold when one of them has a camo margin below it (the first such
 // round is the flagged round). Answers: the logged options (affordable when logged; threat-replay.mjs rebuild) with a
 // known cost whose purchase raises camoCheck's can_pop for the flagged round; the best is the largest gain per dollar.
+// Camo models (--models; camo.mjs, data only):
+//   npm run btd6:camo-replay -- --models [--since 2026-09-30T10-00] [--json]
+// Runs: currentEra, Hard Standard and Hard CHIMPS, from --since. At each round with camo bloons, at the round's first
+// decision state (towers, reach, lives margin and calibration as above): today's camo margin (camoCheck ratio) and the
+// models A, B and C (camo.mjs), bucketed by MODEL_BUCKETS with the rounds that lost lives (pops_round lives_lost, else
+// roundsOf); per round also the pops the camo-capable towers made (pops_round per tower, any bloon) and whether a camo
+// bloon was among state.bloons.nearest_exit at the round's last decision. Losses (MODEL_LOSSES): each figure for the
+// loss round at the first decision state of that round and the 3 before. Binding: CHIMPS decision states (no popup) in
+// rounds 6 to 80 where a camo round within THREAT_LEAD_ROUNDS has the figure below CAMO_CAPACITY_AT.
 // Lead margin (--lead; threat.mjs lead_capacity, btd6-jev-v6 revision 12; counts only):
 //   npm run btd6:camo-replay -- --lead [--since 2026-09-30T10-00] [--json]
 // Runs: currentEra, Hard Standard and Hard CHIMPS, from --since. At each round with Lead bloons (estimate.mjs leadRbe > 0),
@@ -34,6 +43,9 @@ import {pathsFor} from './moab-replay.mjs';
 import {readRuns} from './rules-audit.mjs';
 import {harvest, rebuild, poolFor} from './threat-replay.mjs';
 import {floorRulesV6} from './policy-v6.mjs';
+import {camoFigures} from './camo.mjs';
+import {towerEstimate} from './estimate.mjs';
+import {CAMO_CAPACITY_AT} from './threat.mjs';
 
 export const CAMO_THRESHOLDS = [0.9, 1.0, 1.1, 1.2, 1.3];
 export const BIG_LOSS = 5;
@@ -265,8 +277,115 @@ export function formatLead(s) {
  return out.join('\n');
 }
 
+export const MODEL_BUCKETS = [['<0.5', -Infinity, 0.5], ['0.5-1', 0.5, 1], ['1-1.5', 1, 1.5], ['1.5-2', 1.5, 2], ['2-4', 2, 4], ['>=4', 4, Infinity]];
+export const FIGURES = ['today', 'a', 'b', 'c'];
+export const MODEL_LOSSES = [['2026-10-02T20-12-12', 33], ['2026-10-02T21-37-57', 37], ['2026-10-02T21-28-24', 78]];
+export const BINDING_ROUNDS = [6, 80];
+
+// One run: {rounds: [{round, lost, lost_from, figures, camo_tower_pops, camo_tower_est, camo_near_exit}], losses: {round: [{at, figures}]},
+// binding: {decisions, due, only (due, today not), not (today due, this not)} per figure, or null}.
+export function modelsRun(records, {paths = [], losses = [], binding = false} = {}) {
+ return withCalibration(sessionCalibration(records), () => {
+  const firstState = new Map(), lastState = new Map(), popsRound = new Map();
+  for (const r of records) {
+   if (r.kind === 'pops_round' && Number.isFinite(r.round)) popsRound.set(r.round, r);
+   if (!isDecision(r)) continue;
+   const n = r.state.round.number;
+   if (!firstState.has(n)) firstState.set(n, r.state);
+   lastState.set(n, r.state);
+  }
+  const camoTower = t => towerEstimate({base_id: t.base_id, tiers: t.tiers})?.camo === true;
+  const rounds = roundsOf(records).filter(x => hasCamo(x.round) && firstState.has(x.round)).map(x => {
+   const s = firstState.get(x.round), p = popsRound.get(x.round), near = lastState.get(x.round)?.bloons?.nearest_exit;
+   const towers = p?.towers?.filter(camoTower) ?? null, fromPops = Number.isFinite(p?.lives_lost);
+   return {round: x.round, lost: fromPops ? p.lives_lost : x.lost, lost_from: fromPops ? 'pops_round' : 'roundsOf',
+    figures: camoFigures(s.towers, x.round, {lives: s.lives, paths}),
+    camo_tower_pops: towers ? towers.reduce((n, t) => n + (t.pops ?? 0), 0) : null,
+    camo_tower_est: towers ? towers.reduce((n, t) => n + (t.est_reach ?? t.est ?? 0), 0) : null,
+    camo_near_exit: Array.isArray(near) ? near.some(b => b.camo === true || /Camo/.test(b.type ?? '')) : null};
+  });
+  const lossOut = {};
+  for (const n of losses) lossOut[n] = [n - 3, n - 2, n - 1, n].map(at => {
+   const s = firstState.get(at);
+   return {at, figures: s ? camoFigures(s.towers, n, {lives: s.lives, paths}) : null};
+  });
+  let bind = null;
+  if (binding) {
+   const zero = () => Object.fromEntries(FIGURES.map(k => [k, 0]));
+   bind = {decisions: 0, due: zero(), only: zero(), not: zero()};
+   for (const r of records) {
+    if (!isDecision(r) || r.state.popup) continue;
+    const s = r.state, n = s.round.number;
+    if (n < BINDING_ROUNDS[0] || n > BINDING_ROUNDS[1]) continue;
+    bind.decisions++;
+    const last = Math.min(s.match?.end_round ?? 100, n + THREAT_LEAD_ROUNDS), due = Object.fromEntries(FIGURES.map(k => [k, false]));
+    for (let k = n; k <= last; k++) {
+     if (!hasCamo(k)) continue;
+     const fig = camoFigures(s.towers, k, {lives: s.lives, paths});
+     for (const f of FIGURES) if (fig[f] != null && fig[f] < CAMO_CAPACITY_AT) due[f] = true;
+    }
+    for (const f of FIGURES) { if (due[f]) bind.due[f]++; if (due[f] && !due.today) bind.only[f]++; if (!due[f] && due.today) bind.not[f]++; }
+   }
+  }
+  return {rounds, losses: lossOut, binding: bind};
+ });
+}
+
+// The camo-model replay over runs [{name, records}]: per setup and figure, bucket tables (rounds, rounds that lost lives);
+// the losses' figures; the CHIMPS binding counts; nearest-exit counts.
+export function modelsStudy(runs, {losses = MODEL_LOSSES} = {}) {
+ setTowerTable('current');
+ const per = runs.map(({name, records}) => {
+  const start = records.find(r => r.kind === 'run_start') ?? {}, match = modeOf(records), setup = setupOf(match);
+  const mine = losses.filter(([prefix]) => name.startsWith(prefix)).map(([, n]) => n);
+  return {name, setup, policy: start.policy ?? '?', ...modelsRun(records, {paths: pathsFor(start.setup?.map ?? match.map), losses: mine, binding: setup === 'CHIMPS'})};
+ }).filter(p => p.setup);
+ const SETUPS = ['CHIMPS', 'Hard Standard'];
+ const bucket = v => MODEL_BUCKETS.find(([, lo, hi]) => v >= lo && v < hi)[0];
+ const table = (setup, f) => MODEL_BUCKETS.map(([label]) => {
+  const rows = per.filter(p => p.setup === setup).flatMap(p => p.rounds.filter(x => x.figures?.[f] != null && bucket(x.figures[f]) === label));
+  return {bucket: label, rounds: rows.length, lost: rows.filter(x => x.lost > 0).length};
+ });
+ const sum = key => Object.fromEntries(FIGURES.map(f => [f, per.reduce((n, p) => n + (p.binding?.[key][f] ?? 0), 0)]));
+ const all = per.flatMap(p => p.rounds);
+ const exits = lost => { const rows = all.filter(x => (x.lost > 0) === lost); return {rounds: rows.length, camo_near_exit: rows.filter(x => x.camo_near_exit === true).length, unknown: rows.filter(x => x.camo_near_exit == null).length}; };
+ return {runs: per.length, by_setup: Object.fromEntries(SETUPS.map(k => [k, per.filter(p => p.setup === k).length])),
+  camo_rounds: Object.fromEntries(SETUPS.map(k => [k, per.filter(p => p.setup === k).reduce((n, p) => n + p.rounds.length, 0)])),
+  buckets: Object.fromEntries(SETUPS.map(k => [k, Object.fromEntries(FIGURES.map(f => [f, table(k, f)]))])),
+  losses: per.flatMap(p => Object.entries(p.losses).map(([n, list]) => ({run: p.name, round: Number(n), lost: p.rounds.find(x => x.round === Number(n))?.lost ?? null, list}))),
+  lost_rows: per.flatMap(p => p.rounds.filter(x => x.lost > 0).map(x => ({run: p.name, setup: p.setup, ...x}))),
+  binding: {decisions: per.reduce((n, p) => n + (p.binding?.decisions ?? 0), 0), due: sum('due'), only: sum('only'), not: sum('not')},
+  near_exit: {lost: exits(true), clean: exits(false)}, lost_from_roundsOf: all.filter(x => x.lost_from === 'roundsOf').length};
+}
+
+export function formatModels(s) {
+ const f = v => v == null ? '-' : v;
+ const out = [`Runs: ${s.runs} (Hard Standard ${s.by_setup['Hard Standard']}, CHIMPS ${s.by_setup.CHIMPS}); camo rounds at their first decision state: Hard Standard ${s.camo_rounds['Hard Standard']}, CHIMPS ${s.camo_rounds.CHIMPS}. Lives lost from pops_round (roundsOf for ${s.lost_from_roundsOf} rounds without one).`];
+ for (const [setup, figs] of Object.entries(s.buckets)) {
+  out.push('', `${setup}: bucket | ${FIGURES.map(k => `${k} rounds/lost`).join(' | ')}`);
+  MODEL_BUCKETS.forEach(([label], i) => out.push([label, ...FIGURES.map(k => `${figs[k][i].rounds}/${figs[k][i].lost}`)].join(' | ')));
+ }
+ out.push('', 'Losses: run | round (lives lost) | at round | today | a | b | c | can_pop | needs | share | window s | round s');
+ for (const l of s.losses) for (const x of l.list) { const g = x.figures;
+  out.push([l.run.slice(0, 19), `r${l.round} (${f(l.lost)})`, x.at, ...(g ? [g.today, g.a, g.b, g.c, g.can_pop, g.needs, g.share, g.window, g.round_seconds] : ['no state'])].join(' | ')); }
+ out.push('', "Camo rounds that lost lives: run | setup | round | lost | today | a | b | c | camo-capable towers' pops (any bloon) / their est | camo nearest exit at last decision");
+ for (const x of s.lost_rows) out.push([x.run.slice(0, 19), x.setup, x.round, x.lost, f(x.figures?.today), f(x.figures?.a), f(x.figures?.b), f(x.figures?.c), `${f(x.camo_tower_pops)} / ${f(x.camo_tower_est)}`, f(x.camo_near_exit)].join(' | '));
+ const e = s.near_exit;
+ out.push('', `Camo bloon nearest the exit at the round's last decision: lost rounds ${e.lost.camo_near_exit} of ${e.lost.rounds} (unknown ${e.lost.unknown}); clean rounds ${e.clean.camo_near_exit} of ${e.clean.rounds} (unknown ${e.clean.unknown}).`);
+ out.push('', `Binding, CHIMPS decision states in rounds ${BINDING_ROUNDS.join('-')}: ${s.binding.decisions}. figure | due | due, today not | today due, this not`);
+ for (const k of FIGURES) out.push([k, s.binding.due[k], s.binding.only[k], s.binding.not[k]].join(' | '));
+ return out.join('\n');
+}
+
 export function camoMain(argv, dir) {
  const flag = name => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : undefined; };
+ if (argv.includes('--models')) {
+  const runs = selectRuns(readRuns(dir), flag('--since') ?? '2026-09-30T10-00');
+  if (!runs.length) { console.error('No run logs match.'); return 1; }
+  const s = modelsStudy(runs);
+  console.log(argv.includes('--json') ? JSON.stringify(s, null, 1) : formatModels(s));
+  return 0;
+ }
  if (argv.includes('--lead')) {
   const all = readRuns(dir), runs = selectRuns(all, flag('--since') ?? '2026-09-30T10-00');
   if (!runs.length) { console.error('No run logs match.'); return 1; }

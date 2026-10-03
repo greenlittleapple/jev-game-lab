@@ -40,6 +40,26 @@
 //                                (revisions 16 and 17 of btd6-jev-v6's moab_short against revision 15, with one life: binding and
 //                                 saving decisions and logged choices removed by the short round's ratio, and the decisions the
 //                                 10-round DDT lead adds; moabCutoffReplay. Counts only. Track and skipping as --lead-ddt.)
+//   npm run btd6:threat-replay -- --ddt-need [--since 2026-10-01T20-19] [--mode Clicks|Standard] [--calibration <dir>] [--tables a,b] [--without nearest|best] [--saving-only] [--out file.json]
+//                                (revision 18 of btd6-jev-v6 against revision 20's support-effects DDT figure and deadline-based
+//                                 need and nearest-round target (and 20 without it): binding, saving, pass-only and capacity
+//                                 decisions, option sets that differ, decisions the nearest round moves, and for the
+//                                 logs named in --tables the lowest DDT-round ratio per round from 80 and revision 20's MOAB answers
+//                                 at the first decision of rounds 85 to 94 and the saving targets; ddtNeedReplay. From round 76 in
+//                                 CHIMPS; zero-leak logs with one life, as the policy saw them.)
+//   npm run btd6:threat-replay -- --ddt-reach [--since 2026-10-01T20-19] [--mode Clicks|Standard] [--zero-leak] [--calibration <dir>] [--firsts name,...] [--out file.json]
+//                                (revision 21 of btd6-jev-v6 against revision 22's reachable DDT saving targets and same-round
+//                                 capacity answers: per round band (CAMO_BANDS) the decisions, saving decisions per revision,
+//                                 option sets that differ and decisions where the same-round answers were kept; revision 22's
+//                                 saving targets (cost, gain, round, expected cash); for the logs named in --firsts, revision
+//                                 22 at the first decision of rounds 85 to 93; ddtReachReplay. As --camo-rate otherwise.)
+//   npm run btd6:threat-replay -- --camo-rate [--since 2026-10-01T20-19] [--mode Clicks|Standard] [--zero-leak] [--calibration <dir>] [--losses name:round,...] [--out file.json]
+//                                (revision 20 of btd6-jev-v6 against revision 21's camo_capacity on the camo rate, threat.mjs
+//                                 camoRate: per log and round band (CAMO_BANDS) the decisions with camo_capacity due and those
+//                                 where its binding acted, and the option sets that differ; for each --losses entry, at the
+//                                 first decision of the 3 rounds before the loss round, revision 21's camo_capacity round, rate
+//                                 and margin and its camo answers; camoRateReplay. Revision 20's DDT setters on for both;
+//                                 --zero-leak: only zero-leak logs, as the policy saw them, else only logs without it.)
 // Rebuilt from the log: a placement's spot position from the place commands chosen in the logs read (spots never placed
 // on have no position and are skipped), an upgrade's tiers from the tower in the state, and costs from the chosen labels
 // ("... ($270)") for the ordering; purchases whose cost no log shows sort last among equals. The saving part needs the
@@ -51,12 +71,13 @@
 import {writeFileSync} from 'node:fs';
 import {resolve, dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {applyThreatShort, threatShort, burstPerDollar, THREAT_KINDS, THREAT_KINDS_V2, THREAT_KINDS_V3, THREAT_KINDS_V4, THREAT_BURST_AHEAD, LEAD_CAPACITY_AT_R12} from './threat.mjs';
-import {withMoab, moabShort} from './policy-v4.mjs';
+import {applyThreatShort, threatShort, burstPerDollar, camoPerDollar, THREAT_KINDS, THREAT_KINDS_V2, THREAT_KINDS_V3, THREAT_KINDS_V4, THREAT_BURST_AHEAD, THREAT_OPTIONS_R21, LEAD_CAPACITY_AT_R12} from './threat.mjs';
+import {withMoab, moabShort, DDT_GAP_SHARE} from './policy-v4.mjs';
 import {applyTowerCap, floorRulesV6} from './policy-v6.mjs';
-import {setDdtCheck, setMoabCalibration, setMoabDdtLead, hasDdtRound, MOAB_LEAD_ROUNDS, MOAB_DDT_LEAD_ROUNDS} from './moab.mjs';
+import {setDdtCheck, setMoabCalibration, setMoabDdtLead, setDdtSupport, setDdtNeed, moabDue, hasDdtRound, MOAB_LEAD_ROUNDS, MOAB_DDT_LEAD_ROUNDS} from './moab.mjs';
 import {setPopsCalibration} from './estimate.mjs';
 import {currentEra} from './hard-rounds.mjs';
+import {zeroLeakView} from './zero-leak.mjs';
 import {nextTierAllowed} from './candidates.mjs';
 import {pathsFor} from './moab-replay.mjs';
 import {roundsOf} from './pops-calibration.mjs';
@@ -71,9 +92,17 @@ const upgradeCost = (costs, diff, tower, path, after) => costs.get(`${diff}|upgr
 
 // Spot positions and costs from the chosen actions of the given runs: {spots: Map(spot -> {x, y}), costs: Map(key -> cost)}.
 // Keys: place:<tower>, upgrade:<tower>:<tiers after>, per difficulty ("Hard|...").
-export function harvest(runs) {
+// targets (--ddt-reach): also the upgrade costs of the logged saving targets (moab_short and threat_short records' for and
+// saving), for upgrades no run bought, such as the $34,560 Sniper tiers that series 1l saved for.
+export function harvest(runs, {targets = false} = {}) {
  const spots = new Map(), costs = new Map();
  for (const {records} of runs) for (const r of records) {
+  if (targets && r.kind === 'decision' && r.state?.towers) for (const q of r.constraint?.rules ?? []) {
+   const m = q.saving != null && /^upgrade:(\d+):p(\d)$/.exec(q.for ?? ''), t = m && r.state.towers.find(x => String(x.id) === m[1]);
+   if (!t || !Array.isArray(t.tiers)) continue;
+   const path = Number(m[2]), after = t.tiers.map((v, i) => i === path - 1 ? v + 1 : v).join('-'), key = `${r.state.match?.difficulty ?? ''}|upgrade:${tierKey(t.base_id, path, after)}`;
+   if (!costs.has(key)) costs.set(key, q.saving);
+  }
   if (r.kind !== 'decision' || !r.chosen?.command) continue;
   const c = r.chosen, cmd = c.command, diff = r.state?.match?.difficulty ?? '';
   if (cmd.action === 'place_tower') {
@@ -496,7 +525,8 @@ export function moabCutoffReplay(records, lookup, {paths = [], from = -Infinity,
 // and "Start round" left), capacity (moab_short kept camo or Lead capacity answers; revision 19 only); differ: decisions whose
 // option sets differ. targets: each revision's saving targets {id, tiers, cost, gain, gap, share, decisions}, gain being the
 // target's MOAB gain for the short round and share gain / gap. Counts only.
-export const R18_OPTIONS = {moabCapacity: false, ddtGapShare: 0};
+export const R18_OPTIONS = {moabCapacity: false, ddtGapShare: 0, moabNearest: false, ddtSaveBest: false, ddtReach: false, capacitySame: false};
+export const R19_OPTIONS = {moabCapacity: true, ddtGapShare: DDT_GAP_SHARE, moabNearest: false, ddtSaveBest: false, ddtReach: false, capacitySame: false};
 export function ddtSaveReplay(records, lookup, {paths = [], from = -Infinity, to = Infinity} = {}) {
  const offered = [...new Set(records.flatMap(r => r.kind === 'decision' ? (r.options ?? []) : []).map(id => /^place:([^@]+)@/.exec(id)?.[1]).filter(Boolean))];
  const blank = () => ({saving: 0, pass_only: 0, capacity: 0, targets: new Map()});
@@ -514,7 +544,7 @@ export function ddtSaveReplay(records, lookup, {paths = [], from = -Infinity, to
   const pressure = d.constraint?.rules?.some(q => q.kind === 'leak_pressure') ? {active: true} : null;
   let pool = null;
   const context = {paths, pressure, pool: () => pool ??= poolFor(d.state, lookup, offered)};
-  const results = {r18: floorRulesV6(d.state, candidates, context, R18_OPTIONS), r19: floorRulesV6(d.state, candidates, context)};
+  const results = {r18: floorRulesV6(d.state, candidates, context, R18_OPTIONS), r19: floorRulesV6(d.state, candidates, context, R19_OPTIONS)};
   const sets = Object.values(results).map(r => r.candidates.map(c => c.id).sort().join(','));
   if (sets[0] !== sets[1]) out.differ++;
   for (const [key, r] of Object.entries(results)) {
@@ -533,6 +563,211 @@ export function ddtSaveReplay(records, lookup, {paths = [], from = -Infinity, to
  }
  setMoabDdtLead(MOAB_LEAD_ROUNDS);
  for (const key of ['r18', 'r19']) out[key].targets = [...out[key].targets.values()];
+ return out;
+}
+
+// btd6-jev-v6 revision 18 against revision 20 (moab.mjs setDdtSupport and setDdtNeed, policy-v4.mjs moabNearest, both on
+// revision 18's moabCapacity and ddtGapShare) on one run's decisions (--ddt-need below), with poolFor's saving pool and the
+// 10-round DDT lead; also revision 20 with the rule options in `without` (r20w; default moabNearest: false). tables: false skips ratios and answers. Revision 19 isn't run (its check is revision 18's; its rules are
+// ddtSaveReplay's). zeroLeak: the policy's view with one life (zero-leak.mjs zeroLeakView). Per revision: binding (moab_short
+// binds), saving, saving_rounds (rounds with a saving decision), pass_only and capacity as ddtSaveReplay; differ: decisions whose
+// option sets differ between revisions 18 and 20; nearest: revision 20's binding and saving decisions whose round moabNearest
+// moved off the weakest. targets: each revision's saving targets {round, id, cost, gain, gap, decisions, rounds}. ratios: per round from ratioFrom, the lowest
+// ratio among the due rounds with DDTs (moabDue, 10-round lead) over the round's decisions and the due round that set it, per
+// revision. answers: for rounds answersFrom to answersTo, at the round's first rebuilt decision, revision 20's first five
+// options that add MOAB damage, one per tower, tiers and cost (tower, tiers, cost, gain in the check's figure for the round in
+// focus, gain per $1,000), with whether moab_short binds and its round.
+// Revision 18's rules on revision 20's floor (moabCapacity and ddtGapShare are already off by default).
+// Revision 22's options off (policy-v4.mjs ddtReach, capacitySame): the replays written before it keep their revisions.
+export const R22_OFF = {ddtReach: false, capacitySame: false};
+export const R18_OPTIONS_V20 = {moabNearest: false, ddtSaveBest: false, ...R22_OFF};
+const setRevision20 = on => { setDdtSupport(on); setDdtNeed(on); };
+export function ddtNeedReplay(records, lookup, {paths = [], from = -Infinity, to = Infinity, ratioFrom = 80, answersFrom = 85, answersTo = 94, zeroLeak = false, without = {moabNearest: false}, tables = true} = {}) {
+ const offered = [...new Set(records.flatMap(r => r.kind === 'decision' ? (r.options ?? []) : []).map(id => /^place:([^@]+)@/.exec(id)?.[1]).filter(Boolean))];
+ const blank = () => ({binding: 0, saving: 0, saving_rounds: [], pass_only: 0, capacity: 0, targets: new Map()});
+ const out = {decisions: 0, skipped: 0, differ: 0, nearest: {binding: 0, saving: 0}, r18: blank(), r20w: blank(), r20: blank(), ratios: {}, answers: []};
+ const isPass = c => c.details?.kind === 'wait' || c.details?.kind === 'start_round';
+ const answered = new Set();
+ setMoabDdtLead(MOAB_DDT_LEAD_ROUNDS);
+ try {
+  for (const d of records) {
+   if (d.kind !== 'decision' || !d.state?.in_game || d.state.popup || !d.options?.length || !d.state.round) continue;
+   if (d.decisionSource === 'single_option' || d.decisionSource === 'forced') continue;
+   const n = d.state.round.number;
+   if (n < from || n > to) continue;
+   const {candidates, skipped} = rebuild(d, lookup);
+   if (skipped) { out.skipped++; continue; }
+   out.decisions++;
+   const state = zeroLeak ? zeroLeakView(d.state) : d.state;
+   const pressure = d.constraint?.rules?.some(q => q.kind === 'leak_pressure') ? {active: true} : null;
+   let pool = null;
+   const context = {paths, pressure, pool: () => pool ??= poolFor(d.state, lookup, offered)};
+   const results = {};
+   for (const [key, on, opts] of [['r18', false, R18_OPTIONS_V20], ['r20w', true, {...R22_OFF, ...without}], ['r20', true, R22_OFF]]) {
+    setRevision20(on);
+    results[key] = floorRulesV6(state, candidates, context, opts);
+    if (tables && n >= ratioFrom && key !== 'r20w') {
+     const due = moabDue(state.towers, n, {lives: state.lives, paths, end: state.match?.end_round ?? 100, ddtLead: MOAB_DDT_LEAD_ROUNDS}).filter(c => hasDdtRound(c.round));
+     const row = out.ratios[n] ??= {};
+     if (due.length && (!row[key] || due[0].ratio < row[key].ratio)) row[key] = {ratio: due[0].ratio, due: due[0].round, needs: due[0].needs_dps, dps: due[0].dps};
+    }
+   }
+   const ids = r => r.candidates.map(c => c.id).sort().join(',');
+   if (ids(results.r18) !== ids(results.r20)) out.differ++;
+   for (const [key, r] of Object.entries(results)) {
+    const o = out[key], rule = (r.constraint?.rules ?? []).find(q => q.kind === 'moab_short');
+    if (r.candidates.length && r.candidates.every(isPass)) o.pass_only++;
+    if (rule?.binding) o.binding++;
+    if (rule?.kept_capacity) o.capacity++;
+    if (key === 'r20' && rule?.weakest != null) { if (rule.binding) out.nearest.binding++; if (rule.saving != null) out.nearest.saving++; }
+    if (rule?.saving == null) continue;
+    o.saving++;
+    if (!o.saving_rounds.includes(n)) o.saving_rounds.push(n);
+    const k = `${rule.round}|${rule.for}`;
+    const t = o.targets.get(k) ?? {round: rule.round, id: rule.for, cost: rule.saving, gain: rule.gain ?? null, gap: rule.gap ?? null, decisions: 0, rounds: []};
+    t.decisions++;
+    if (!t.rounds.includes(n)) t.rounds.push(n);
+    o.targets.set(k, t);
+   }
+   if (tables && n >= answersFrom && n <= answersTo && !answered.has(n)) {
+    answered.add(n);
+    const rule = (results.r20.constraint?.rules ?? []).find(q => q.kind === 'moab_short');
+    out.answers.push({round: n, cash: Math.floor(state.cash), binding: rule?.binding === true, short: rule ? {round: rule.round, dps: rule.dps, needs: rule.needs_dps, weakest: rule.weakest ?? null} : null,
+     top: [...new Map(results.r20.candidates.filter(c => (c.details?.moab ?? 0) > 0).map(c => [`${c.details.tower}|${c.details.tiers_after}|${c.details.cost}`, c])).values()].slice(0, 5)
+      .map(c => ({tower: c.details.tower ?? c.id, tiers: c.details.tiers_after ?? (c.details.kind === 'place' ? '0-0-0' : null), kind: c.details.kind, cost: c.details.cost, gain: c.details.moab,
+       per_1000: c.details.cost > 0 ? +(1000 * c.details.moab / c.details.cost).toFixed(2) : null}))});
+   }
+  }
+ } finally { setRevision20(false); setMoabDdtLead(MOAB_LEAD_ROUNDS); }
+ for (const key of ['r18', 'r20w', 'r20']) out[key].targets = [...out[key].targets.values()];
+ return out;
+}
+
+// Revision 20 of btd6-jev-v6 against revision 21 (camo_capacity on the camo rate), on each rebuilt decision (no popup, not
+// single-option or forced) with revision 20's DDT setters on for both, and revision 21 also without capacityNearer (21n).
+// Per round band (CAMO_BANDS: [from, to]): decisions; due (threatShort with THREAT_KINDS_V4 has camo_capacity), binding
+// (threat_short binds on camo_capacity) per revision; differ and differ_n (option sets after the floor differ from revision
+// 20's, for 21 and 21n); bind21u and differ_u: revision 21 without the gap guard (camoBindShare: 0). Rebuilt purchases with
+// no cost in the logs are left out as not affordable (no_cost counts them). losses: rounds; for each, at the first decision of each of the 3 rounds before,
+// revision 21's camo_capacity round, rate and margin and its camo answers (most camo gain per dollar first, up to 5), and the
+// number of decisions in those rounds with camo_capacity due. zeroLeak: the policy's view with one life.
+export const CAMO_BANDS = [[6, 30], [31, 60], [61, 80], [81, 100]];
+export function camoRateReplay(records, lookup, {paths = [], zeroLeak = false, losses = []} = {}) {
+ const offered = [...new Set(records.flatMap(r => r.kind === 'decision' ? (r.options ?? []) : []).map(id => /^place:([^@]+)@/.exec(id)?.[1]).filter(Boolean))];
+ const band = n => CAMO_BANDS.find(([a, b]) => n >= a && n <= b);
+ const out = {decisions: 0, skipped: 0, no_cost: 0, bands: Object.fromEntries(CAMO_BANDS.map(([a, b]) => [`${a}-${b}`, {decisions: 0, due20: 0, due21: 0, bind20: 0, bind21n: 0, bind21u: 0, bind21: 0, differ_n: 0, differ_u: 0, differ: 0}])), losses: []};
+ const before = new Map(losses.flatMap(L => [L - 3, L - 2, L - 1].filter(n => n > 0).map(n => [n, L])));
+ const seen = new Set(), lossRows = new Map(losses.map(L => [L, {round: L, due_decisions: 0, decisions: 0, first: []}]));
+ const camoBinds = r => (r.constraint?.rules ?? []).some(q => q.kind === 'threat_short' && q.binding && q.binding_kind === 'camo_capacity');
+ setDdtSupport(true); setDdtNeed(true); setMoabDdtLead(MOAB_DDT_LEAD_ROUNDS);
+ try {
+  for (const d of records) {
+   if (d.kind !== 'decision' || !d.state?.in_game || d.state.popup || !d.options?.length || !d.state.round) continue;
+   if (d.decisionSource === 'single_option' || d.decisionSource === 'forced') continue;
+   const n = d.state.round.number, b = band(n);
+   if (!b && !before.has(n)) continue;
+   const rebuilt = rebuild(d, lookup);
+   if (rebuilt.skipped) { out.skipped++; continue; }
+   out.decisions++;
+   // Purchases whose cost no log shows (placements of towers never bought) count as not affordable: left out.
+   const candidates = rebuilt.candidates.filter(c => !((c.details?.kind === 'place' || c.details?.kind === 'upgrade') && !Number.isFinite(c.details.cost)));
+   out.no_cost += rebuilt.candidates.length - candidates.length;
+   const state = zeroLeak ? zeroLeakView(d.state) : d.state;
+   const pressure = d.constraint?.rules?.some(q => q.kind === 'leak_pressure') ? {active: true} : null;
+   let pool = null;
+   const context = {paths, pressure, pool: () => pool ??= poolFor(d.state, lookup, offered)};
+   const r21u = floorRulesV6(state, candidates, context, {threatOptions: {...THREAT_OPTIONS_R21, camoBindShare: 0}, ...R22_OFF});
+   const r20 = floorRulesV6(state, candidates, context, {threatOptions: THREAT_BURST_AHEAD, capacityNearer: false, ...R22_OFF});
+   const r21n = floorRulesV6(state, candidates, context, {threatOptions: THREAT_OPTIONS_R21, capacityNearer: false, ...R22_OFF});
+   const r21 = floorRulesV6(state, candidates, context, {threatOptions: THREAT_OPTIONS_R21, ...R22_OFF});
+   const due = opts => 'camo_capacity' in (threatShort(state, paths, {kinds: THREAT_KINDS_V4, ...opts})?.rounds ?? {});
+   const due21 = due(THREAT_OPTIONS_R21);
+   if (b) {
+    const o = out.bands[`${b[0]}-${b[1]}`];
+    o.decisions++;
+    if (due(THREAT_BURST_AHEAD)) o.due20++;
+    if (due21) o.due21++;
+    if (camoBinds(r20)) o.bind20++;
+    if (camoBinds(r21n)) o.bind21n++;
+    if (camoBinds(r21u)) o.bind21u++;
+    if (camoBinds(r21)) o.bind21++;
+    const ids = r => r.candidates.map(c => c.id).sort().join(',');
+    if (ids(r20) !== ids(r21n)) o.differ_n++;
+    if (ids(r20) !== ids(r21u)) o.differ_u++;
+    if (ids(r20) !== ids(r21)) o.differ++;
+   }
+   if (!before.has(n)) continue;
+   const row = lossRows.get(before.get(n));
+   row.decisions++;
+   if (due21) row.due_decisions++;
+   if (seen.has(n)) continue;
+   seen.add(n);
+   const short = threatShort(state, paths, {kinds: THREAT_KINDS_V4, ...THREAT_OPTIONS_R21});
+   const rule = (r21.constraint?.rules ?? []).find(q => q.kind === 'threat_short');
+   const camo = 'camo_capacity' in (short?.rounds ?? {}) ? {round: short.rounds.camo_capacity, rate: short.ratios.camo_capacity, margin: short.camoMargin} : null;
+   const answers = r21.candidates.filter(c => camoPerDollar(c) != null).sort((x, y) => camoPerDollar(y) - camoPerDollar(x)).slice(0, 5)
+    .map(c => ({tower: c.details.tower ?? c.id, tiers: c.details.tiers_after ?? (c.details.kind === 'place' ? '0-0-0' : null), kind: c.details.kind, cost: c.details.cost, camo_gain: c.details.camo_gain}));
+   row.first.push({round: n, cash: Math.floor(d.state.cash), camo, rules: (r21.constraint?.rules ?? []).map(q => q.kind + (q.binding_kind ? ':' + q.binding_kind : '')), rules_n: (r21n.constraint?.rules ?? []).map(q => q.kind), rules_u: (r21u.constraint?.rules ?? []).map(q => q.kind + ((q.binding_kind ?? '') ? ':' + q.binding_kind : '')), held: rule?.camo_bind_held ?? null, binding: rule?.binding === true ? rule.binding_kind : null, first: rule?.first ?? null, answers});
+  }
+ } finally { setDdtSupport(false); setDdtNeed(false); setMoabDdtLead(MOAB_LEAD_ROUNDS); }
+ out.losses = [...lossRows.values()];
+ return out;
+}
+
+// Revision 21 of btd6-jev-v6 against revision 22 (policy-v4.mjs ddtReach and capacitySame), on each rebuilt decision (no popup,
+// not single-option or forced) with revision 20's DDT setters on for both, as camoRateReplay. Per round band: decisions, saving21
+// and saving22 (moab_short saves), differ (option sets differ), kept (revision 22's moab_short keeps capacity answers through
+// capacitySame), unreached (revision 21 saved and revision 22 doesn't). targets: revision 22's saving targets by target and
+// round: {for, cost, gain, round, decisions, reach: [min, max]}. firsts: at the first decision of each round from firstFrom to
+// firstTo, revision 22's saving (for, cost, round, reach) or null, its binding, and the capacity answers it kept (tower, tiers,
+// cost, camo_gain, lead_gain), with revision 21's saving beside it. zeroLeak: the policy's view with one life.
+export function ddtReachReplay(records, lookup, {paths = [], zeroLeak = false, firsts = false, firstFrom = 85, firstTo = 93} = {}) {
+ const offered = [...new Set(records.flatMap(r => r.kind === 'decision' ? (r.options ?? []) : []).map(id => /^place:([^@]+)@/.exec(id)?.[1]).filter(Boolean))];
+ const band = n => CAMO_BANDS.find(([a, b]) => n >= a && n <= b);
+ const out = {decisions: 0, skipped: 0, bands: Object.fromEntries(CAMO_BANDS.map(([a, b]) => [`${a}-${b}`, {decisions: 0, saving21: 0, saving22: 0, unreached: 0, differ: 0, kept: 0}])), targets: new Map(), firsts: []};
+ const seen = new Set();
+ const moab = r => (r.constraint?.rules ?? []).find(q => q.kind === 'moab_short');
+ setDdtSupport(true); setDdtNeed(true); setMoabDdtLead(MOAB_DDT_LEAD_ROUNDS);
+ try {
+  for (const d of records) {
+   if (d.kind !== 'decision' || !d.state?.in_game || d.state.popup || !d.options?.length || !d.state.round) continue;
+   if (d.decisionSource === 'single_option' || d.decisionSource === 'forced') continue;
+   const n = d.state.round.number, b = band(n);
+   if (!b) continue;
+   const rebuilt = rebuild(d, lookup);
+   if (rebuilt.skipped) { out.skipped++; continue; }
+   out.decisions++;
+   const candidates = rebuilt.candidates.filter(c => !((c.details?.kind === 'place' || c.details?.kind === 'upgrade') && !Number.isFinite(c.details.cost)));
+   const state = zeroLeak ? zeroLeakView(d.state) : d.state;
+   const pressure = d.constraint?.rules?.some(q => q.kind === 'leak_pressure') ? {active: true} : null;
+   let pool = null;
+   const context = {paths, pressure, pool: () => pool ??= poolFor(d.state, lookup, offered)};
+   const r21 = floorRulesV6(state, candidates, context, R22_OFF), r22 = floorRulesV6(state, candidates, context);
+   const m21 = moab(r21), m22 = moab(r22), o = out.bands[`${b[0]}-${b[1]}`];
+   o.decisions++;
+   if (m21?.saving != null) o.saving21++;
+   if (m22?.saving != null) o.saving22++;
+   if (m21?.saving != null && m22?.saving == null) o.unreached++;
+   if (m22?.kept_capacity) o.kept++;
+   const ids = r => r.candidates.map(c => c.id).sort().join(',');
+   if (ids(r21) !== ids(r22)) o.differ++;
+   if (m22?.saving != null) {
+    const key = `${m22.for}|${m22.saving}|${m22.round}`, t = out.targets.get(key) ?? {for: m22.for, cost: m22.saving, gain: m22.gain, round: m22.round, decisions: 0, reach: [Infinity, -Infinity]};
+    t.decisions++; t.reach = [Math.min(t.reach[0], m22.reach), Math.max(t.reach[1], m22.reach)];
+    out.targets.set(key, t);
+   }
+   if (!firsts || n < firstFrom || n > firstTo || seen.has(n)) continue;
+   seen.add(n);
+   const capacity = m22?.kept_capacity ? r22.candidates.filter(c => (c.details?.threat ?? []).some(k => k === 'camo_capacity' || k === 'lead_capacity'))
+    .map(c => ({tower: c.details.tower ?? c.id, tiers: c.details.tiers_after ?? (c.details.kind === 'place' ? '0-0-0' : null), cost: c.details.cost, camo_gain: c.details.camo_gain, lead_gain: c.details.lead_gain})) : [];
+   const t22 = (r22.constraint?.rules ?? []).find(q => q.kind === 'threat_short');
+   out.firsts.push({round: n, cash: Math.floor(d.state.cash), short: m22?.round ?? null, ratio: m22?.ratio ?? null, first: r22.candidates.slice(0, 3).map(c => c.id),
+    threat22: t22 ? {round: t22.round, missing: t22.missing, binding: t22.binding === true ? t22.binding_kind : null, deferred: t22.deferred_to ?? null, held: t22.camo_bind_held ?? null} : null,
+    saving22: m22?.saving != null ? {for: m22.for, cost: m22.saving, gain: m22.gain, reach: m22.reach} : null, binding22: m22?.binding === true,
+    saving21: m21?.saving != null ? {for: m21.for, cost: m21.saving} : null, threat: (r22.constraint?.rules ?? []).find(q => q.kind === 'threat_short')?.missing ?? null, kept: capacity});
+  }
+ } finally { setDdtSupport(false); setDdtNeed(false); setMoabDdtLead(MOAB_LEAD_ROUNDS); }
+ out.targets = [...out.targets.values()];
  return out;
 }
 
@@ -584,6 +819,81 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
    return {name, policy: `${start.policy}${start.policy_revision != null ? ` r${start.policy_revision}` : ''}`,
     ...moabCutoffReplay(records, lookup, {paths, from: Number.isFinite(from) ? from : undefined, to: Number.isFinite(to) ? to : undefined})};
   });
+  if (flag('--out')) writeFileSync(resolve(flag('--out')), JSON.stringify(results, null, 1));
+  console.log(JSON.stringify(results, null, argv.includes('--json') ? 1 : undefined));
+  process.exit(0);
+ }
+ if (argv.includes('--ddt-reach')) {
+  // As --camo-rate: --since, --mode, --zero-leak, --calibration; revision 21 against 22 (ddtReachReplay). --firsts name,...
+  const since = flag('--since') ?? '', mode = flag('--mode') ?? 'Clicks', lookup = harvest(all, {targets: true}), zl = argv.includes('--zero-leak');
+  const calibration = resolve(flag('--calibration') ?? join(root, '.private/btd6/calibration'));
+  const firsts = (flag('--firsts') ?? '').split(',').filter(Boolean);
+  const chosen = runs.filter(r => r.name >= since && r.records.find(x => x.kind === 'run_start')?.policy === 'btd6-jev-v6'
+   && (r.records.find(x => x.kind === 'run_start')?.zero_leak === true) === zl
+   && r.records.some(x => x.kind === 'decision' && x.state?.match?.mode === mode && x.state?.match?.difficulty === 'Hard'));
+  setDdtCheck(true);
+  const {loadCalibration} = await import('./moab-calibration.mjs');
+  const results = [];
+  for (const {name, records} of chosen) {
+   const start = records.find(r => r.kind === 'run_start') ?? {}, map = start.setup?.map ?? records.find(r => r.kind === 'decision')?.state?.match?.map;
+   const cal = start.calibration ?? {}, setup = start.setup ?? records.find(r => r.kind === 'session_start')?.setup;
+   setMoabCalibration(cal.moab?.factor ?? (setup ? (await loadCalibration(calibration, setup)).factor : 1));
+   setPopsCalibration(cal.pops?.factor ?? 1, {fromRound: cal.pops?.from_round ?? 1});
+   const paths = argv.includes('--no-track') ? [] : pathsFor(map);
+   const r = ddtReachReplay(records, lookup, {paths, zeroLeak: start.zero_leak === true, firsts: firsts.some(p => name.includes(p))});
+   results.push({name, policy: `${start.policy}${start.policy_revision != null ? ` r${start.policy_revision}` : ''}`, zero_leak: start.zero_leak === true, ...r});
+  }
+  if (flag('--out')) writeFileSync(resolve(flag('--out')), JSON.stringify(results, null, 1));
+  console.log(JSON.stringify(results, null, argv.includes('--json') ? 1 : undefined));
+  process.exit(0);
+ }
+ if (argv.includes('--camo-rate')) {
+  // As --ddt-need: --since, --mode, --calibration; revision 20 against 21 (camoRateReplay). --losses name:round,...
+  const since = flag('--since') ?? '', mode = flag('--mode') ?? 'Clicks', lookup = harvest(all), zl = argv.includes('--zero-leak');
+  const calibration = resolve(flag('--calibration') ?? join(root, '.private/btd6/calibration'));
+  const losses = (flag('--losses') ?? '').split(',').filter(Boolean).map(s => { const i = s.lastIndexOf(':'); return {part: s.slice(0, i), round: Number(s.slice(i + 1))}; });
+  const chosen = runs.filter(r => r.name >= since && r.records.find(x => x.kind === 'run_start')?.policy === 'btd6-jev-v6'
+   && (r.records.find(x => x.kind === 'run_start')?.zero_leak === true) === zl
+   && r.records.some(x => x.kind === 'decision' && x.state?.match?.mode === mode && x.state?.match?.difficulty === 'Hard'));
+  setDdtCheck(true);
+  const {loadCalibration} = await import('./moab-calibration.mjs');
+  const results = [];
+  for (const {name, records} of chosen) {
+   const start = records.find(r => r.kind === 'run_start') ?? {}, map = start.setup?.map ?? records.find(r => r.kind === 'decision')?.state?.match?.map;
+   const cal = start.calibration ?? {}, setup = start.setup ?? records.find(r => r.kind === 'session_start')?.setup;
+   setMoabCalibration(cal.moab?.factor ?? (setup ? (await loadCalibration(calibration, setup)).factor : 1));
+   setPopsCalibration(cal.pops?.factor ?? 1, {fromRound: cal.pops?.from_round ?? 1});
+   const paths = argv.includes('--no-track') ? [] : pathsFor(map);
+   const r = camoRateReplay(records, lookup, {paths, zeroLeak: start.zero_leak === true, losses: losses.filter(l => name.includes(l.part)).map(l => l.round)});
+   results.push({name, policy: `${start.policy}${start.policy_revision != null ? ` r${start.policy_revision}` : ''}`, zero_leak: start.zero_leak === true, ...r});
+  }
+  if (flag('--out')) writeFileSync(resolve(flag('--out')), JSON.stringify(results, null, 1));
+  console.log(JSON.stringify(results, null, argv.includes('--json') ? 1 : undefined));
+  process.exit(0);
+ }
+ if (argv.includes('--ddt-need')) {
+  // As --ddt-save: --since, --mode, --calibration, --rounds; revision 18 against revision 20 (ddtNeedReplay). Per log
+  // the counts, and the ratio, answer and saving-target tables only for --tables <run-name parts>.
+  const since = flag('--since') ?? '', mode = flag('--mode') ?? 'Clicks', lookup = harvest(all);
+  const calibration = resolve(flag('--calibration') ?? join(root, '.private/btd6/calibration'));
+  const start76 = flag('--rounds') != null && Number.isFinite(from) ? from : mode === 'Clicks' ? 76 : -Infinity;
+  const tables = flag('--tables')?.split(',').filter(Boolean) ?? null;
+  const chosen = runs.filter(r => r.name >= since && r.records.find(x => x.kind === 'run_start')?.policy === 'btd6-jev-v6'
+   && r.records.some(x => x.kind === 'decision' && x.state?.match?.mode === mode && x.state?.match?.difficulty === 'Hard'));
+  setDdtCheck(true);
+  const {loadCalibration} = await import('./moab-calibration.mjs');
+  const results = [];
+  for (const {name, records} of chosen) {
+   const start = records.find(r => r.kind === 'run_start') ?? {}, map = start.setup?.map ?? records.find(r => r.kind === 'decision')?.state?.match?.map;
+   const cal = start.calibration ?? {}, setup = start.setup ?? records.find(r => r.kind === 'session_start')?.setup;
+   setMoabCalibration(cal.moab?.factor ?? (setup ? (await loadCalibration(calibration, setup)).factor : 1));
+   setPopsCalibration(cal.pops?.factor ?? 1, {fromRound: cal.pops?.from_round ?? 1});
+   const paths = argv.includes('--no-track') ? [] : pathsFor(map);
+   const r = ddtNeedReplay(records, lookup, {paths, from: start76, to: Number.isFinite(to) ? to : undefined, zeroLeak: start.zero_leak === true,
+    without: flag('--without') === 'best' ? {ddtSaveBest: false} : {moabNearest: false}, tables: !argv.includes('--saving-only')});
+   if (tables && !tables.some(p => name.includes(p))) { delete r.ratios; delete r.answers; for (const k of ['r18', 'r20w', 'r20']) delete r[k].targets; }
+   results.push({name, policy: `${start.policy}${start.policy_revision != null ? ` r${start.policy_revision}` : ''}`, zero_leak: start.zero_leak === true, ...r});
+  }
   if (flag('--out')) writeFileSync(resolve(flag('--out')), JSON.stringify(results, null, 1));
   console.log(JSON.stringify(results, null, argv.includes('--json') ? 1 : undefined));
   process.exit(0);

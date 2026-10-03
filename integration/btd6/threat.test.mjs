@@ -88,7 +88,7 @@ test('gating: v4 unchanged; v6 revision 2 and later, v5 revision 6 and later and
  assert.ok(threatRule(claudeGameV1(() => context).rules(state, options(state))), 'claude-v1');
  const playbook = await loadPlaybook(new URL('./playbooks/monkey-meadow-hard-standard.json', import.meta.url));
  assert.ok(threatRule(playbookGameV5(() => context, {playbook}).rules(state, options(state))), 'v5');
- assert.deepEqual([V6_REVISION, V5_REVISION, CLAUDE_V1_REVISION], [19, 23, 22]);
+ assert.deepEqual([V6_REVISION, V5_REVISION, CLAUDE_V1_REVISION], [22, 26, 25]);
 });
 
 // Round 78 (Monkey Meadow Hard Standard): the defence of the v6 revision 2 loss (log 21-12-37) at round 75, reduced to
@@ -104,7 +104,7 @@ test('revision 3 kinds: burst due from round 75 for round 78; purchases that rai
  const short = threatShort(state, paths, {kinds: THREAT_KINDS_V2});
  assert.deepEqual(short.missing, ['burst']);
  assert.ok(short.rounds.burst >= 75 && short.rounds.burst <= 78);
- const r = floorRulesV6(state, options(state), context);
+ const r = floorRulesV6(state, options(state), context, {threatOptions: THREAT_BURST_AHEAD});
  const rule = threatRule(r);
  assert.deepEqual(rule.missing, ['burst']);
  assert.ok(!ids(r.candidates).includes('wait'));
@@ -199,10 +199,10 @@ test('revision 4 (v6), 8 (v5), 7 (claude-v1): burst is checked 3 rounds ahead, a
  assert.deepEqual([neu(73).rounds, neu(73).ratios], [{burst: 76}, {burst: 0.72}]);
  // The policies: v6's default floor flags round 76 at round 73 and records the first answer's gain; v4 runs no threat_short.
  const state = at(73, {cash: 1000, towers: burstTowers()});
- const rule = threatRule(floorRulesV6(state, options(state), context));
+ const rule = threatRule(floorRulesV6(state, options(state), context, {threatOptions: THREAT_BURST_AHEAD}));
  assert.deepEqual([rule.rounds, rule.missing], [{burst: 76}, ['burst']]);
  assert.ok(rule.first_gain > 0 && rule.first_cost > 0);
- assert.equal(threatRule(floorRulesV6(at(72, {cash: 1000, towers: burstTowers()}), options(state), context)), undefined, 'nothing at round 72');
+ assert.equal(threatRule(floorRulesV6(at(72, {cash: 1000, towers: burstTowers()}), options(state), context, {threatOptions: THREAT_BURST_AHEAD})), undefined, 'nothing at round 72');
  assert.equal(threatRule(btd6Game(() => context, {policy: 'btd6-jev-v4'}).rules(state, options(state))), undefined, 'v4');
  assert.ok(threatRule(claudeGameV1(() => context).rules(state, options(state))), 'claude-v1 revision 7');
 });

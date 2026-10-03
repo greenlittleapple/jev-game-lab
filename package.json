@@ -21,6 +21,7 @@
     "btd6:moab-replay": "node integration/btd6/moab-replay.mjs",
     "btd6:threat-replay": "node integration/btd6/threat-replay.mjs",
     "btd6:camo-replay": "node integration/btd6/camo-replay.mjs",
+    "btd6:income": "node integration/btd6/income.mjs",
     "btd6:hard-rounds": "node integration/btd6/hard-rounds.mjs",
     "btd6:early-ratios": "node integration/btd6/early-ratios.mjs",
     "btd6:speed-replay": "node integration/btd6/speed-replay.mjs",

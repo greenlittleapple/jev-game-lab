@@ -3,6 +3,7 @@
 //   node integration/btd6/data/generate.mjs <path to btd6-game-data clone>
 //   node integration/btd6/data/generate.mjs <clone> --candidate   (towers-candidate.json and rounds-candidate.json only, for
 //     pops-study --fixes: the Purple field and the camo and Purple peaks)
+//   node integration/btd6/data/generate.mjs <clone> --camo-timing   (camo-timing.json only, for camo-replay.mjs --models)
 // The committed files were made from commit f818c39 ("56.0"). Both files record the commit they came from.
 //
 // rounds.json, rounds 1 to 100 of Rounds/DefaultRoundSet (the game's round index + 1):
@@ -15,6 +16,10 @@
 //   first: bloon types and properties seen for the first time in the round set
 //   camo_lead: how many of the round's bloons are both Camo and Lead (a tower must see camo and pop Lead with
 //        one attack to pop their Lead layer)
+//   moab_groups: the round's MOAB-class groups as [bloon, count, start, end], start and end in seconds from the round
+//        start (frames / 60); the bloons of a group are spread evenly from its start to its end, as for peak. moab.mjs
+//        moabCheck takes the most MOAB-class health due within any stretch of time from them (btd6-jev-v6 revision 19).
+//        Only rounds with MOAB-class bloons have it.
 //   camo_rbe: the RBE of the round's camo bloons (each bloon's full RBE, by its name in the export; graded speed's
 //        camo margin, speed.mjs defenceMargins with camo)
 //   peak: the most RBE sent within any PEAK_SECONDS of the round (bloons of a group spread evenly from its start to
@@ -89,6 +94,11 @@ import {join, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 export const PIERCE_CAP = 10;
+// Pops one hit can make on a bloon that isn't MOAB-class: a Ceramic's RBE (bloonRbe('Ceramic'), 104). The Druid's
+// Jungle vine (0-3-x and up) grabs one bloon and destroys it, which the export writes as pierce 9999999 and damage
+// 9999999. Counted as is (pierce at PIERCE_CAP) it gave 38,461,546 pops a second; in log 2026-10-02T18-17-19 a 0-3-2
+// Druid measured 96 to 1,985 pops a round against estimates of 0.28 to 1.7 billion.
+export const KILL_CAP = 104;
 export const PEAK_SECONDS = 10;
 const MIN_RATE = 0.1;
 const here = dirname(fileURLToPath(import.meta.url));
@@ -156,6 +166,15 @@ export function roundExtras(groups, seconds = PEAK_SECONDS) {
  return {camo_rbe: camoRbe, camo_peak: peak(camo), purple: purples, purple_peak: peak(purple)};
 }
 
+// The spawn stretch of a round's camo bloons (camo-timing.json, camo-replay.mjs --models): {start, end} in seconds from the
+// round start, the first camo group's start and the last one's end (groups as in roundPeak; camo by name, as camo_rbe);
+// null in a round without camo bloons.
+export function camoTiming(groups) {
+ const camo = groups.filter(g => g.count > 0 && parseBloon(g.bloon).camo);
+ if (!camo.length) return null;
+ return {start: +(Math.min(...camo.map(g => g.start)) / 60).toFixed(2), end: +(Math.max(...camo.map(g => g.end)) / 60).toFixed(2)};
+}
+
 async function rounds(dir) {
  const seen = new Set(), out = {};
  for (let r = 1; r <= 100; r++) {
@@ -171,7 +190,9 @@ async function rounds(dir) {
    for (const key of [b.base, ...['camo', 'regrow', 'fortified'].filter(k => b[k]).map(k => k[0].toUpperCase() + k.slice(1))])
     if (!seen.has(key)) { seen.add(key); first.push(key); }
   }
-  out[r] = {bloons, rbe, seconds: +(end / 60).toFixed(1), camo, regrow, fortified, first, camo_lead: camoLead, peak: roundPeak(groups), camo_rbe: roundExtras(groups).camo_rbe};
+  const moabGroups = groups.filter(g => MOAB_CLASS.test(g.bloon)).map(g => [g.bloon, g.count, +(g.start / 60).toFixed(2), +(g.end / 60).toFixed(2)]);
+  out[r] = {bloons, rbe, seconds: +(end / 60).toFixed(1), camo, regrow, fortified, first, camo_lead: camoLead, peak: roundPeak(groups), camo_rbe: roundExtras(groups).camo_rbe,
+   ...(moabGroups.length ? {moab_groups: moabGroups} : {})};
  }
  return out;
 }
@@ -220,7 +241,11 @@ export const ringShare = (b, child) => {
 function projectileValue(p, depth = 0, {ring = false} = {}) {
  if (!p || depth > 3) return {pops: 0, lead: false, purple: false};
  const dmg = (p.behaviors ?? []).find(b => isType(b, 'DamageModel'));
- let pops = dmg && dmg.damage > 0 ? Math.min(p.pierce ?? 1, PIERCE_CAP) * dmg.damage : 0;
+ // A projectile that hits only its target (CollideOnlyWithTargetModel) has pierce 1, whatever its pierce field says. A
+ // projectile filtered away from MOAB-class bloons pops at most the largest bloon it can hit, a Ceramic (KILL_CAP).
+ const pierce = (p.behaviors ?? []).some(b => isType(b, 'CollideOnlyWithTargetModel')) ? 1 : Math.min(p.pierce ?? 1, PIERCE_CAP);
+ const damage = dmg && dmg.damage > 0 ? (hitsMoab(projectileFilters(p)) ? dmg.damage : Math.min(dmg.damage, KILL_CAP)) : 0;
+ let pops = pierce * damage;
  let lead = Boolean(dmg && dmg.damage > 0 && !(dmg.immuneBloonProperties & 1)), purple = Boolean(dmg && dmg.damage > 0 && !(dmg.immuneBloonProperties & 8));
  for (const b of p.behaviors ?? []) if (b?.projectile && CREATES.test(b.$type)) {
   const child = projectileValue(b.projectile, depth + 1, {ring});
@@ -428,6 +453,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
  if (process.argv.includes('--ddt')) {
   await writeDdt();
   console.log(`Wrote towers-ddt.json from ${source}`);
+  process.exit(0);
+ }
+ if (process.argv.includes('--camo-timing')) {
+  const timing = {};
+  for (let r = 1; r <= 100; r++) { const t = camoTiming(JSON.parse(await readFile(join(dir, 'Rounds/DefaultRoundSet', `${r}.json`), 'utf8')).groups); if (t) timing[r] = t; }
+  await writeFile(join(here, 'camo-timing.json'), lines({source, round_set: 'DefaultRoundSet', fields: ['start', 'end']}, 'rounds', timing));
+  console.log(`Wrote camo-timing.json from ${source}`);
   process.exit(0);
  }
  if (process.argv.includes('--candidate')) {

@@ -96,7 +96,9 @@ const fake = config.dryRun ? fakeGame() : null;
 const readRetries = {log: null};
 const bridge = fake ? fake.bridge : bridgeClient({port: config.bridgePort,
  onReadRetry: retry => readRetries.log?.append({kind: 'bridge_read_retry', ...retry})});
-const ask = fake ? fakeJev({usage, limits}) : jevClient({apiKey: config.apiKey, usage, limits});
+// Jev retries (a timeout, or a transient HTTP 5xx) go to the run log the same way.
+const ask = fake ? fakeJev({usage, limits}) : jevClient({apiKey: config.apiKey, usage, limits,
+ onRetry: retry => readRetries.log?.append({kind: 'jev_retry', ...retry})});
 const loadSpots = fake
  ? async () => computeSpotCatalog(bridge)
  : async (map, paths) => loadSpotCatalog(resolve(root, '.private/btd6/spots'), map, paths);
